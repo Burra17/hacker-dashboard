@@ -1,0 +1,6 @@
+@HackerDashboard.API_HostAddress = http://localhost:5076
+
+GET {{HackerDashboard.API_HostAddress}}/health
+Accept: text/plain
+
+###
