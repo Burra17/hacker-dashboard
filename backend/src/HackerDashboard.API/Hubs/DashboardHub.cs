@@ -8,4 +8,11 @@ namespace HackerDashboard.API.Hubs;
 /// <see cref="HackerDashboard.Domain.Streaming.DashboardEvent{T}"/> out via
 /// <c>IHubContext&lt;DashboardHub&gt;</c> (issues 1.5/1.6). Connect/disconnect use the defaults.
 /// </summary>
-public sealed class DashboardHub : Hub;
+public sealed class DashboardHub : Hub
+{
+    /// <summary>
+    /// The single client-side method every <c>DashboardEvent</c> is delivered on. The
+    /// frontend registers one handler here and routes by <c>channel</c> to the right slice.
+    /// </summary>
+    public const string ReceiveEventMethod = "ReceiveDashboardEvent";
+}
