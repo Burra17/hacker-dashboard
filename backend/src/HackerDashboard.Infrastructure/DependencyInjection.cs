@@ -1,3 +1,4 @@
+using HackerDashboard.Infrastructure.Streaming;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -7,7 +8,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // External API clients, repositories and background producers are registered here as features land.
+        // External API clients and repositories are registered here as features land.
+        services.AddHostedService<SystemLogProducer>();
         return services;
     }
 }

@@ -1,8 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using HackerDashboard.API.Hubs;
+using HackerDashboard.API.Streaming;
 using HackerDashboard.Application;
 using HackerDashboard.Application.Features.Ping;
+using HackerDashboard.Application.Interfaces.Services;
 using HackerDashboard.Infrastructure;
 using MediatR;
 
@@ -15,7 +17,16 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddHealthChecks();
 builder.Services.AddOpenApi();
-builder.Services.AddSignalR();
+
+// Enums (DashboardEventType, SystemLogLevel) go over SignalR as camelCase strings to match the
+// shared TypeScript contracts. SignalR serializes its own payloads, so this is configured
+// separately from the HTTP JSON options below.
+builder.Services.AddSignalR()
+    .AddJsonProtocol(options =>
+        options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
+
+// API-layer adapter that lets Infrastructure producers push events without referencing the hub.
+builder.Services.AddSingleton<IDashboardEventPublisher, DashboardEventPublisher>();
 
 // Restrict cross-origin access to the configured frontend origin(s). AllowCredentials is
 // required for SignalR's WebSocket/credentialed transports, so origins must be explicit
