@@ -141,3 +141,13 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Visual studio
+.vs
+
+# .NET build output
+[Bb]in/
+[Oo]bj/
+*.user
+project.lock.json
+artifacts/
