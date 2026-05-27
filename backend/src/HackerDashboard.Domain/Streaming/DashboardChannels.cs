@@ -8,4 +8,7 @@ public static class DashboardChannels
 {
     /// <summary>Rolling system log feed (simulated in Phase 1).</summary>
     public const string SystemLogs = "system.logs";
+
+    /// <summary>Periodic liveness ping driving the client's live/offline indicator.</summary>
+    public const string Heartbeat = "heartbeat";
 }

@@ -8,8 +8,10 @@ namespace HackerDashboard.Infrastructure.Streaming;
 /// Phase 1 producer that pushes a simulated rolling system log onto the
 /// <see cref="DashboardChannels.SystemLogs"/> channel every <see cref="Interval"/>. It exercises
 /// the full streaming pipe (producer → publisher → hub → client) without any external data.
+/// Each line is also recorded in <see cref="ISystemLogStore"/> so a connecting client gets a
+/// snapshot of recent history before deltas resume.
 /// </summary>
-public sealed class SystemLogProducer(IDashboardEventPublisher publisher) : BackgroundService
+public sealed class SystemLogProducer(IDashboardEventPublisher publisher, ISystemLogStore store) : BackgroundService
 {
     private static readonly TimeSpan Interval = TimeSpan.FromSeconds(1.5);
 
@@ -34,7 +36,9 @@ public sealed class SystemLogProducer(IDashboardEventPublisher publisher) : Back
             using PeriodicTimer timer = new(Interval);
             while (await timer.WaitForNextTickAsync(stoppingToken))
             {
-                await publisher.PublishAsync(BuildEvent(), stoppingToken);
+                SystemLogPayload line = BuildLine();
+                store.Add(line);
+                await publisher.PublishAsync(ToDelta(line), stoppingToken);
             }
         }
         catch (OperationCanceledException)
@@ -43,16 +47,18 @@ public sealed class SystemLogProducer(IDashboardEventPublisher publisher) : Back
         }
     }
 
-    private static DashboardEvent<SystemLogPayload> BuildEvent()
+    private static SystemLogPayload BuildLine()
     {
         (SystemLogLevel level, string message) = Lines[Random.Shared.Next(Lines.Length)];
         string source = Sources[Random.Shared.Next(Sources.Length)];
+        return new SystemLogPayload(level, source, message);
+    }
 
-        return new DashboardEvent<SystemLogPayload>(
+    private static DashboardEvent<SystemLogPayload> ToDelta(SystemLogPayload line) =>
+        new(
             EventId: Guid.NewGuid().ToString(),
             Channel: DashboardChannels.SystemLogs,
             Type: DashboardEventType.Delta,
             Timestamp: DateTimeOffset.UtcNow,
-            Payload: new SystemLogPayload(level, source, message));
-    }
+            Payload: line);
 }

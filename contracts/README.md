@@ -9,6 +9,8 @@ C# record (`csharp/`) — so neither side drifts.
 | Contract | Purpose |
 |---|---|
 | `DashboardEvent<T>` | The one envelope for all server→client data over SignalR. |
+| `SystemLogPayload` | A "system.logs" line; `delta` sends one, `snapshot` sends `SystemLogPayload[]`. |
+| `HeartbeatPayload` | The "heartbeat" channel payload; arrival drives the live indicator. |
 | `TerminalCommand` | A terminal line parsed into `verb` + `args`, sent over HTTP. |
 | `CommandResult` | The backend's response to a command, echoed in the terminal. |
 
