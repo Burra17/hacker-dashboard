@@ -12,4 +12,7 @@ public sealed record DashboardEvent<T>(
     string Channel,
     DashboardEventType Type,
     DateTimeOffset Timestamp,
-    T Payload);
+    T Payload) : IDashboardEvent
+{
+    object? IDashboardEvent.Payload => Payload;
+}
