@@ -76,6 +76,12 @@ Format: `type(scope): description` in imperative mood.
 - All changes go through a PR to `main`. `main` is protected — no direct push.
 - Reference the issue. Keep PRs scoped to one issue where possible.
 
+### Project board
+Columns: **Backlog → Todo → In Progress → In Review → Done**. An issue's card moves with the work:
+- Starting it: create an issue-linked branch (`gh issue develop <n>`) and move the card to **In Progress**.
+- Opening the PR (`Closes #<n>`): move the card to **In Review**.
+- Merge: the card lands in **Done** and the issue auto-closes (built-in workflow). Only this last hop is automated; the earlier moves are manual.
+
 ## Code Quality Bar (applies everywhere)
 
 The goal is high code quality with clear separation of responsibilities (SRP). Apply YAGNI — build what the current issue needs, not speculative abstractions.

@@ -3,8 +3,8 @@
 .NET stack rules for `backend/`. The root `CLAUDE.md` (shared conventions, contracts, git) also applies.
 
 ## Tech Stack
-- .NET 10 (Web API)
-- MediatR for CQRS
+- .NET 10 (Web API). The solution is the new XML format — `HackerDashboard.slnx`, not `.sln` (build/test against the `.slnx`).
+- MediatR for CQRS — pinned to **12.4.1**, the last MIT-licensed release (newer versions are commercially licensed). Don't bump without a deliberate licensing decision.
 - SignalR for real-time server→client streaming
 - ErrorOr for the Result pattern (expected application errors)
 - FluentValidation for input validation
@@ -38,7 +38,7 @@ backend/
   HackerDashboard.Tests/
 ```
 
-- **Domain** — entities, value objects, enums, domain logic. Pure C#, zero external packages. The `DashboardEvent` envelope shape lives here (or in Application) so both the hub and handlers share it.
+- **Domain** — entities, value objects, enums, domain logic. Pure C#, zero external packages. The `DashboardEvent<T>` envelope + `DashboardEventType` live in `Domain/Streaming/` (mirroring `contracts/`) so both the hub and handlers share them. Keep Domain free of serialization attributes — enums go over the wire as camelCase strings via a `JsonStringEnumConverter(JsonNamingPolicy.CamelCase)` configured at the API JSON options, not on the type.
 - **Application** — CQRS commands/queries via MediatR, handlers, DTOs, interfaces (repositories + external services), FluentValidation validators, AutoMapper profiles, pipeline behaviours. Feature-scoped under `Features/{Area}/`.
 - **Infrastructure** — repository implementations, external API clients (weather, sports), `BackgroundService` data producers, strongly-typed settings, DI wiring.
 - **API** — thin controllers (dispatch via MediatR), the SignalR `DashboardHub`, middleware, `Program.cs`, DI composition.
@@ -66,11 +66,14 @@ HackerDashboard.Application/
       Common/
         Dtos/        Errors/        Mappings/
   Common/
-    Behaviours/ (ValidationBehaviour, LoggingBehaviour)
+    Messaging/   (IQuery/IQueryHandler, ICommand/ICommandHandler — markers over MediatR's IRequest)
+    Behaviours/  (ValidationBehaviour, LoggingBehaviour)
   Interfaces/
     Repositories/    Services/
   DependencyInjection.cs
 ```
+
+Queries/commands implement the `IQuery<T>` / `ICommand<T>` markers from `Common/Messaging/`, and handlers implement `IQueryHandler<,>` / `ICommandHandler<,>` rather than MediatR's `IRequestHandler` directly.
 
 ### Naming
 | Concern | Pattern | Example |
@@ -118,8 +121,9 @@ The backend should have **strong test coverage** — prioritise it.
 - Each of Application and Infrastructure owns a `DependencyInjection.cs` extension method. `Program.cs` only calls `AddApplication()` / `AddInfrastructure(config)`. Never register services directly in `Program.cs`.
 
 ## Common Commands
-- Run API: `dotnet run --project src/HackerDashboard.API`
-- Run tests: `dotnet test`
+- Build: `dotnet build HackerDashboard.slnx` (use the `.slnx`, not `.sln`).
+- Run API: `dotnet run --project src/HackerDashboard.API --launch-profile http` (→ `http://localhost:5076`). Health at `/health`; `/ping` is a temporary MediatR smoke test.
+- Run tests: `dotnet test` — note the `HackerDashboard.Tests` project is not scaffolded yet (see Tests section); add it before relying on this.
 - Secrets (e.g. external API keys): `dotnet user-secrets` — never hardcode or commit keys.
 
 ## Things to Avoid (backend)
