@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/HackerDashboard.API/HackerDashboard.API.csproj" />
+    <Project Path="src/HackerDashboard.Application/HackerDashboard.Application.csproj" />
+    <Project Path="src/HackerDashboard.Domain/HackerDashboard.Domain.csproj" />
+    <Project Path="src/HackerDashboard.Infrastructure/HackerDashboard.Infrastructure.csproj" />
+  </Folder>
+</Solution>
