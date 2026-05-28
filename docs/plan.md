@@ -56,7 +56,7 @@ Målet: den visuella grunden — det fasta rutnätet av terminalfönster där al
 Skapa Next.js-app i `/frontend` (App Router, TypeScript). Installera och konfigurera Tailwind CSS. Verifiera att dev-servern kör.
  
 ### Issue 2.2 — Konfigurera temat (mörk bakgrund + neon-accenter)
-Definiera färgpaletten i `tailwind.config.ts`: mörka bakgrundstoner och lysande neon-accentfärger. Lägg in en monospace-font för terminalkänslan. Skapa CSS-variabler så teman kan bytas i runtime (förberedelse för `theme`-kommandot).
+Definiera färgpaletten med mörka bakgrundstoner och lysande neon-accentfärger. Eftersom frontenden kör Tailwind v4 (CSS-first, ingen `tailwind.config.ts`) bor paletten i `@theme` i `globals.css`. Lägg in en monospace-font för terminalkänslan. Skapa CSS-variabler per `[data-theme]` så teman kan bytas i runtime (förberedelse för `theme`-kommandot).
  
 ### Issue 2.3 — Bygg dashboardens CSS Grid-layout
 Bygg det fasta rutnätet av paneler ("terminalfönster") kloss-i-kloss för Tiling WM-känslan. Skapa en återanvändbar `<Panel>`-komponent (titelrad, ram, innehållsyta). Statisk layout, hårdkodad data räcker här.

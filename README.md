@@ -12,7 +12,7 @@ A **.NET 10 Web API** (Clean Architecture + CQRS) streams real-time data over **
 ```
 hacker-dashboard/
   backend/      .NET 10 Web API (Clean Architecture, CQRS, SignalR)
-  frontend/     Next.js + TypeScript (not scaffolded yet — Phase 2)
+  frontend/     Next.js + TypeScript (App Router, Tailwind v4, pnpm)
   contracts/    Shared data contracts (TypeScript + C#) — source of truth
   docs/         plan.md and design docs
 ```
@@ -20,7 +20,7 @@ hacker-dashboard/
 ## Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/)
-- Node.js + [pnpm](https://pnpm.io/) (for the frontend, once scaffolded)
+- Node.js + [pnpm](https://pnpm.io/) (for the frontend)
 
 ## Running the backend
 
@@ -37,7 +37,13 @@ The API listens on `http://localhost:5076`:
 
 ## Running the frontend
 
-Not scaffolded yet — see Phase 2 in [`docs/plan.md`](docs/plan.md).
+```bash
+cd frontend
+pnpm install
+pnpm dev
+```
+
+The dev server listens on `http://localhost:3000`.
 
 ## Documentation
 
