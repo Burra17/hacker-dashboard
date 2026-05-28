@@ -16,7 +16,7 @@ Next.js stack rules for `frontend/`. The root `CLAUDE.md` (shared conventions, c
 
 This is a deliberate, hard line — keep it sharp.
 
-- **Zustand** holds client state only: UI (active theme, panel toggles), terminal (input + history), and SignalR-streamed data per channel.
+- **Zustand** holds client state only: UI (active theme, panel toggles), terminal (input + history), SignalR-streamed data per channel, and live-connection status.
 - **TanStack Query** owns HTTP-fetched server data: weather, sports, calendar — polled (~every 5 min), with its own cache/refetch/stale handling.
 - Never store the same data in both. If it arrives over SignalR → Zustand. If it's fetched over HTTP → TanStack Query. Don't copy Query data into Zustand.
 
@@ -33,6 +33,7 @@ Separate slices, one responsibility each:
 - `ui` — theme, panel visibility/toggles.
 - `terminal` — current input, command history.
 - `streams` — SignalR data keyed by channel.
+- `connection` — live/offline status + last heartbeat (drives the live indicator).
 
 Keep the TanStack/Zustand boundary documented in the store so it doesn't erode over time.
 
@@ -51,6 +52,7 @@ Keep the TanStack/Zustand boundary documented in the store so it doesn't erode o
 ## Conventions
 - One component per file; filename matches the component.
 - TypeScript everywhere — type props and the contract shapes; no `any`.
+- Reuse the shared contracts from `contracts/typescript` via the `@contracts/*` path alias as **type-only** imports (e.g. `import type { DashboardEvent } from "@contracts/DashboardEvent"`) — don't redefine contract shapes in the frontend.
 - Functional components + hooks. Co-locate component-specific hooks/types.
 - Tailwind utility classes for styling; theme via the CSS variables, not hardcoded colors, so `theme` commands work.
 
