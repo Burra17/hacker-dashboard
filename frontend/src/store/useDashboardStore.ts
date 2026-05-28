@@ -8,6 +8,10 @@ import {
   createStreamsSlice,
   type StreamsSlice,
 } from "@/store/slices/streamsSlice";
+import {
+  createConnectionSlice,
+  type ConnectionSlice,
+} from "@/store/slices/connectionSlice";
 
 /**
  * State boundary (hard line — keep it sharp):
@@ -19,10 +23,14 @@ import {
  * if it arrives over SignalR it lives in `streams`; if it's fetched over HTTP
  * it stays in the Query cache.
  */
-export type DashboardStore = UiSlice & TerminalSlice & StreamsSlice;
+export type DashboardStore = UiSlice &
+  TerminalSlice &
+  StreamsSlice &
+  ConnectionSlice;
 
 export const useDashboardStore = create<DashboardStore>()((...a) => ({
   ...createUiSlice(...a),
   ...createTerminalSlice(...a),
   ...createStreamsSlice(...a),
+  ...createConnectionSlice(...a),
 }));

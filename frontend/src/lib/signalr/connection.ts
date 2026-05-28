@@ -9,7 +9,10 @@ let connection: HubConnection | null = null;
 /** Lazily create and reuse the single hub connection for the whole app. */
 export function getConnection(): HubConnection {
   if (!connection) {
-    connection = new HubConnectionBuilder().withUrl(DASHBOARD_HUB_URL).build();
+    connection = new HubConnectionBuilder()
+      .withUrl(DASHBOARD_HUB_URL)
+      .withAutomaticReconnect()
+      .build();
   }
   return connection;
 }
