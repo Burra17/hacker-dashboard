@@ -19,7 +19,7 @@ export default function Panel({ title, children, className, stale }: PanelProps)
         </h2>
         <span className="text-xs text-muted">{stale ? "STALE" : "●"}</span>
       </header>
-      <div className="min-h-0 flex-1 overflow-auto p-3 text-sm text-fg">
+      <div className="no-scrollbar min-h-0 flex-1 overflow-auto p-3 text-sm text-fg">
         {children}
       </div>
     </section>

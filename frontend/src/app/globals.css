@@ -40,3 +40,11 @@ body {
   color: var(--fg);
   font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
 }
+
+/* Scrollable content without a visible scrollbar (terminal aesthetic). */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
