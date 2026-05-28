@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import Panel from "@/components/Panel";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { DASHBOARD_CHANNELS } from "@/lib/signalr/channels";
@@ -19,6 +19,12 @@ const LEVEL_TONE: Record<SystemLogLine["level"], string> = {
   error: "text-accent-2",
 };
 
+function formatTime(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
 export default function SystemLogsPanel({ className }: { className?: string }) {
   const online = useDashboardStore((s) => s.status === "online");
   const events = useDashboardStore((s) => s.streams[DASHBOARD_CHANNELS.systemLogs]);
@@ -27,6 +33,11 @@ export default function SystemLogsPanel({ className }: { className?: string }) {
     [events],
   );
 
+  const bottomRef = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ block: "end" });
+  }, [lines]);
+
   return (
     <Panel title="system.logs" className={className} stale={!online}>
       {lines.length === 0 ? (
@@ -34,17 +45,16 @@ export default function SystemLogsPanel({ className }: { className?: string }) {
       ) : (
         <ul className="space-y-0.5">
           {lines.map((line) => (
-            <li key={line.key} className="whitespace-pre-wrap break-all">
-              <span className="text-muted">
-                {new Date(line.timestamp).toLocaleTimeString()}{" "}
-              </span>
-              <span className={LEVEL_TONE[line.level]}>
-                {line.level.toUpperCase().padEnd(7)}
+            <li key={line.key} className="whitespace-pre-wrap break-words">
+              <span className="text-muted">{formatTime(line.timestamp)} </span>
+              <span className={`inline-block w-[8ch] ${LEVEL_TONE[line.level]}`}>
+                {line.level.toUpperCase()}
               </span>
               <span className="text-accent">{line.source}: </span>
               <span className="text-fg">{line.message}</span>
             </li>
           ))}
+          <li ref={bottomRef} aria-hidden="true" />
         </ul>
       )}
     </Panel>
