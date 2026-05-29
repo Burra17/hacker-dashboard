@@ -53,9 +53,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install pnpm
+        # Version comes from the "packageManager" field in frontend/package.json,
+        # keeping the local toolchain and CI on a single source of truth.
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          package_json_file: frontend/package.json
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
