@@ -57,7 +57,9 @@ Keep the TanStack/Zustand boundary documented in the store so it doesn't erode o
 - Tailwind utility classes for styling; theme via the CSS variables, not hardcoded colors, so `theme` commands work.
 
 ## Tests
-- Backend is the test-heavy side; frontend testing approach is not locked yet. If you add tests, prefer Vitest + React Testing Library (the modern default for Vite/Next) and keep them colocated. Ask before introducing a test framework so we set it up once, deliberately.
+- **Vitest + React Testing Library** (jsdom). Run with `pnpm test` (CI) or `pnpm test:watch`. Config: `vitest.config.mts` (React plugin + `vite-tsconfig-paths` so `@/` and `@contracts` resolve like in app code); global setup in `vitest.setup.ts` (jest-dom matchers, RTL auto-cleanup, a `scrollIntoView` stub jsdom lacks).
+- Colocate tests next to the code: `*.test.ts(x)` beside the unit. Pure logic (e.g. `parseCommand`) and store mutations (e.g. `applySideEffect`) are unit-tested; components use RTL + `@testing-library/user-event`, mocking network modules (`vi.mock("@/lib/terminal/sendCommand")`).
+- Backend is still the test-heavy side; cover meaningful frontend logic and component behavior, not snapshots.
 
 ## Things to Avoid (frontend)
 - ❌ Copying TanStack Query data into Zustand (or vice versa) — respect the boundary.
