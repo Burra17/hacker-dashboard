@@ -5,4 +5,7 @@
     <Project Path="src/HackerDashboard.Domain/HackerDashboard.Domain.csproj" />
     <Project Path="src/HackerDashboard.Infrastructure/HackerDashboard.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="HackerDashboard.Tests/HackerDashboard.Tests.csproj" />
+  </Folder>
 </Solution>
