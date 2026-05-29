@@ -3,8 +3,7 @@
 import { useEffect, useRef, type FormEvent } from "react";
 import Panel from "@/components/Panel";
 import { useDashboardStore } from "@/store/useDashboardStore";
-import { parseCommand } from "@/lib/terminal/parseCommand";
-import { sendCommand } from "@/lib/terminal/sendCommand";
+import { executeTerminalCommand } from "@/lib/terminal/executeTerminalCommand";
 import { applySideEffect } from "@/lib/terminal/applySideEffect";
 
 const PROMPT = "guest@hacker-dashboard:~$";
@@ -29,7 +28,7 @@ export default function TerminalPanel({ className }: { className?: string }) {
     setInput("");
 
     try {
-      const result = await sendCommand(parseCommand(raw));
+      const result = await executeTerminalCommand(raw);
       pushLine({ kind: "output", text: result.output });
       if (result.sideEffect) applySideEffect(result.sideEffect);
     } catch {

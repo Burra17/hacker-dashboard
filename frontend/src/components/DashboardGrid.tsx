@@ -6,6 +6,7 @@ import SystemLogsPanel from "@/components/panels/SystemLogsPanel";
 import WeatherPanel from "@/components/panels/WeatherPanel";
 import SportsPanel from "@/components/panels/SportsPanel";
 import TerminalPanel from "@/components/panels/TerminalPanel";
+import { useDashboardStore } from "@/store/useDashboardStore";
 
 const DEFAULT_TERMINAL_HEIGHT = 180;
 const MIN_TERMINAL_HEIGHT = 80;
@@ -14,6 +15,7 @@ const MIN_SPACE_ABOVE = 220;
 
 export default function DashboardGrid() {
   const [terminalHeight, setTerminalHeight] = useState(DEFAULT_TERMINAL_HEIGHT);
+  const panels = useDashboardStore((s) => s.panels);
 
   const startResize = (event: PointerEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -38,20 +40,22 @@ export default function DashboardGrid() {
       className="grid h-screen grid-cols-2 bg-bg"
       style={{ gridTemplateRows: `auto 1fr 1fr ${terminalHeight}px` }}
     >
-      <TickerPanel className="col-span-2" />
-      <SystemLogsPanel className="row-span-2" />
-      <WeatherPanel />
-      <SportsPanel />
-      <div className="col-span-2 flex min-h-0 flex-col">
-        <div
-          onPointerDown={startResize}
-          role="separator"
-          aria-orientation="horizontal"
-          aria-label="Resize terminal"
-          className="h-1.5 shrink-0 cursor-ns-resize bg-border transition-colors hover:bg-accent"
-        />
-        <TerminalPanel className="min-h-0 flex-1" />
-      </div>
+      {panels.ticker && <TickerPanel className="col-span-2" />}
+      {panels["system.logs"] && <SystemLogsPanel className="row-span-2" />}
+      {panels.weather && <WeatherPanel />}
+      {panels.sports && <SportsPanel />}
+      {panels.terminal && (
+        <div className="col-span-2 flex min-h-0 flex-col">
+          <div
+            onPointerDown={startResize}
+            role="separator"
+            aria-orientation="horizontal"
+            aria-label="Resize terminal"
+            className="h-1.5 shrink-0 cursor-ns-resize bg-border transition-colors hover:bg-accent"
+          />
+          <TerminalPanel className="min-h-0 flex-1" />
+        </div>
+      )}
     </main>
   );
 }
