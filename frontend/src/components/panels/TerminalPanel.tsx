@@ -3,37 +3,58 @@
 import { useEffect, useRef, type FormEvent } from "react";
 import Panel from "@/components/Panel";
 import { useDashboardStore } from "@/store/useDashboardStore";
+import { parseCommand } from "@/lib/terminal/parseCommand";
+import { sendCommand } from "@/lib/terminal/sendCommand";
+import { applySideEffect } from "@/lib/terminal/applySideEffect";
 
 const PROMPT = "guest@hacker-dashboard:~$";
 
-// Echo-only stub for Issue 3.6 — no command parsing yet (that lands in Fas 4).
 export default function TerminalPanel({ className }: { className?: string }) {
   const input = useDashboardStore((s) => s.input);
   const setInput = useDashboardStore((s) => s.setInput);
   const history = useDashboardStore((s) => s.history);
-  const pushHistory = useDashboardStore((s) => s.pushHistory);
+  const pushLine = useDashboardStore((s) => s.pushLine);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "end" });
   }, [history]);
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (input.trim() === "") return;
-    pushHistory(input);
+    const raw = input;
+    if (raw.trim() === "") return;
+
+    pushLine({ kind: "command", text: raw });
     setInput("");
+
+    try {
+      const result = await sendCommand(parseCommand(raw));
+      pushLine({ kind: "output", text: result.output });
+      if (result.sideEffect) applySideEffect(result.sideEffect);
+    } catch {
+      pushLine({ kind: "output", text: "error: command could not reach the backend" });
+    }
   };
 
   return (
     <Panel title="terminal" className={className}>
       <div className="flex min-h-full flex-col">
-        {history.map((line, index) => (
-          <div key={index} className="whitespace-pre-wrap break-words">
-            <span className="text-accent">{PROMPT}</span>{" "}
-            <span className="text-fg">{line}</span>
-          </div>
-        ))}
+        {history.map((line) =>
+          line.kind === "command" ? (
+            <div key={line.id} className="whitespace-pre-wrap break-words">
+              <span className="text-accent">{PROMPT}</span>{" "}
+              <span className="text-fg">{line.text}</span>
+            </div>
+          ) : (
+            <div
+              key={line.id}
+              className="whitespace-pre-wrap break-words text-muted"
+            >
+              {line.text}
+            </div>
+          ),
+        )}
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
           <span className="shrink-0 text-accent">{PROMPT}</span>
           <input
