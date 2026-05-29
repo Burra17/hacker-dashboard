@@ -3,3 +3,4 @@ export * from "./SystemLogPayload";
 export * from "./HeartbeatPayload";
 export * from "./TerminalCommand";
 export * from "./CommandResult";
+export * from "./TerminalResponsePayload";
