@@ -59,4 +59,12 @@ describe("runLocalUiCommand", () => {
     expect(result.success).toBe(false);
     expect(result.output).toContain("banana");
   });
+
+  it("refuses to hide the terminal and leaves it visible", () => {
+    const result = runLocalUiCommand(cmd("toggle", "terminal"));
+
+    expect(result.success).toBe(false);
+    expect(result.output).toBe("Error: Cannot hide primary control terminal");
+    expect(useDashboardStore.getState().panels.terminal).toBe(true);
+  });
 });

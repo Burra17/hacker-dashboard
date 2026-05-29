@@ -47,6 +47,9 @@ export function runLocalUiCommand(command: TerminalCommand): CommandResult {
       if (!isPanelId(arg)) {
         return uiResult(false, `unknown panel '${arg}' (${PANEL_IDS.join(", ")})`);
       }
+      if (arg === "terminal") {
+        return uiResult(false, "Error: Cannot hide primary control terminal");
+      }
       togglePanel(arg);
       return uiResult(
         true,

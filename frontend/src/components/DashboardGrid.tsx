@@ -42,8 +42,10 @@ export default function DashboardGrid() {
     >
       {panels.ticker && <TickerPanel className="col-span-2" />}
       {panels["system.logs"] && <SystemLogsPanel className="row-span-2" />}
-      {panels.weather && <WeatherPanel />}
-      {panels.sports && <SportsPanel />}
+      <div className="row-span-2 flex h-full min-h-0 flex-col">
+        {panels.weather && <WeatherPanel className="min-h-0 flex-1" />}
+        {panels.sports && <SportsPanel className="min-h-0 flex-1" />}
+      </div>
       {panels.terminal && (
         <div className="col-span-2 flex min-h-0 flex-col">
           <div
