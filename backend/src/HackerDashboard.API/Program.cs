@@ -18,6 +18,13 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddHealthChecks();
 builder.Services.AddOpenApi();
 
+// MVC controllers serialize via Mvc.JsonOptions — a SEPARATE config from ConfigureHttpJsonOptions
+// (minimal APIs) and the SignalR protocol below. All three need the camelCase enum converter or
+// enums like CommandKind go over the wire as ints. Keep the three in sync.
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
+
 // Enums (DashboardEventType, SystemLogLevel) go over SignalR as camelCase strings to match the
 // shared TypeScript contracts. SignalR serializes its own payloads, so this is configured
 // separately from the HTTP JSON options below.
@@ -57,6 +64,8 @@ app.UseCors(frontendCorsPolicy);
 app.MapHealthChecks("/health");
 
 app.MapHub<DashboardHub>(dashboardHubRoute);
+
+app.MapControllers();
 
 // Smoke test for the MediatR pipeline (Issue 1.2). Replaced by real endpoints as features land.
 app.MapGet("/ping", (ISender sender) => sender.Send(new PingQuery()));
