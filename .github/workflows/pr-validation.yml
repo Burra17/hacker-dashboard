@@ -1,0 +1,76 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+# Least privilege: these jobs only read the checked-out code.
+permissions:
+  contents: read
+
+# A new push to the same PR cancels in-flight runs for that PR.
+concurrency:
+  group: pr-validation-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-backend:
+    name: Build & Test Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore HackerDashboard.slnx
+
+      - name: Verify formatting
+        run: dotnet format HackerDashboard.slnx --verify-no-changes --no-restore
+
+      - name: Build
+        run: dotnet build HackerDashboard.slnx --no-restore --configuration Release
+
+      - name: Run tests
+        run: dotnet test HackerDashboard.slnx --no-build --configuration Release
+
+  validate-frontend:
+    name: Build & Lint Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        # Version comes from the "packageManager" field in frontend/package.json,
+        # keeping the local toolchain and CI on a single source of truth.
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: ./frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build
