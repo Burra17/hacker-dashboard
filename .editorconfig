@@ -1,0 +1,30 @@
+# EditorConfig — shared formatting baseline for the monorepo.
+# Line endings are intentionally NOT pinned here: the working tree is CRLF on Windows and
+# LF on the Linux CI runner, and `dotnet format` tolerates either when end_of_line is unset.
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{md,markdown}]
+trim_trailing_whitespace = false
+
+[*.{yml,yaml,json}]
+indent_size = 2
+
+[*.{ts,tsx,js,jsx,css}]
+indent_size = 2
+
+[*.cs]
+indent_size = 4
+
+# C# conventions mirrored from backend/CLAUDE.md. Kept at suggestion level so the CI
+# `dotnet format --verify-no-changes` gate enforces whitespace, not opinionated refactors.
+csharp_style_namespace_declarations = file_scoped:suggestion
+csharp_prefer_braces = true:suggestion
+dotnet_sort_system_directives_first = true
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
