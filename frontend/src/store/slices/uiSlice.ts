@@ -1,17 +1,27 @@
 import type { StateCreator } from "zustand";
 import type { DashboardStore } from "@/store/useDashboardStore";
 
-export type ThemeName = "matrix" | "synthwave";
+export const THEME_NAMES = ["matrix", "synthwave"] as const;
+export type ThemeName = (typeof THEME_NAMES)[number];
 
-export type PanelId = "ticker" | "system.logs" | "weather" | "sports" | "terminal";
+export const PANEL_IDS = [
+  "ticker",
+  "system.logs",
+  "weather",
+  "sports",
+  "terminal",
+] as const;
+export type PanelId = (typeof PANEL_IDS)[number];
 
-const ALL_PANELS_VISIBLE: Record<PanelId, boolean> = {
-  ticker: true,
-  "system.logs": true,
-  weather: true,
-  sports: true,
-  terminal: true,
-};
+export const isThemeName = (value: string | undefined): value is ThemeName =>
+  value !== undefined && (THEME_NAMES as readonly string[]).includes(value);
+
+export const isPanelId = (value: string | undefined): value is PanelId =>
+  value !== undefined && (PANEL_IDS as readonly string[]).includes(value);
+
+const ALL_PANELS_VISIBLE = Object.fromEntries(
+  PANEL_IDS.map((id) => [id, true]),
+) as Record<PanelId, boolean>;
 
 export interface UiSlice {
   theme: ThemeName;
