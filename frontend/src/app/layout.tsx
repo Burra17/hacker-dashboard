@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import DashboardConnection from "@/components/DashboardConnection";
+import ThemeSync from "@/components/ThemeSync";
 import "./globals.css";
 
 const jetBrainsMono = JetBrains_Mono({
@@ -25,6 +26,7 @@ export default function RootLayout({
       className={`${jetBrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-mono">
+        <ThemeSync />
         <DashboardConnection />
         {children}
       </body>

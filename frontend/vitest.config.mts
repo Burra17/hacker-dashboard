@@ -1,11 +1,11 @@
 import react from "@vitejs/plugin-react";
-import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
-// vite-tsconfig-paths resolves the "@/*" and "@contracts/*" aliases from tsconfig.json,
-// so tests import modules exactly like app code does.
+// resolve.tsconfigPaths maps the "@/*" and "@contracts/*" aliases from tsconfig.json
+// (Vite-native), so tests import modules exactly like app code does.
 export default defineConfig({
-  plugins: [react(), tsconfigPaths()],
+  plugins: [react()],
+  resolve: { tsconfigPaths: true },
   test: {
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],

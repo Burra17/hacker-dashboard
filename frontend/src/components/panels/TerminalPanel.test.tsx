@@ -15,26 +15,36 @@ beforeEach(() => {
 });
 
 describe("TerminalPanel", () => {
-  it("echoes the command, renders backend output, and applies the side effect", async () => {
-    const result: CommandResult = {
-      success: true,
-      kind: "ui",
-      output: "theme set to synthwave",
-      sideEffect: { action: "setTheme", value: "synthwave" },
-    };
-    vi.mocked(sendCommand).mockResolvedValue(result);
-
+  it("handles a local ui command without hitting the backend", async () => {
     render(<TerminalPanel />);
     await userEvent.type(
       screen.getByLabelText("terminal input"),
       "theme synthwave{enter}",
     );
 
-    expect(
-      await screen.findByText("theme set to synthwave"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("theme → synthwave")).toBeInTheDocument();
     expect(screen.getByText("theme synthwave")).toBeInTheDocument();
+    expect(sendCommand).not.toHaveBeenCalled();
     expect(useDashboardStore.getState().theme).toBe("synthwave");
+  });
+
+  it("renders backend output and applies a returned side effect", async () => {
+    const result: CommandResult = {
+      success: true,
+      kind: "data",
+      output: "fetched",
+      sideEffect: { action: "togglePanel", target: "weather" },
+    };
+    vi.mocked(sendCommand).mockResolvedValue(result);
+
+    render(<TerminalPanel />);
+    await userEvent.type(
+      screen.getByLabelText("terminal input"),
+      "fetch weather{enter}",
+    );
+
+    expect(await screen.findByText("fetched")).toBeInTheDocument();
+    expect(useDashboardStore.getState().panels.weather).toBe(false);
   });
 
   it("renders an error line when the command cannot reach the backend", async () => {
