@@ -29,7 +29,8 @@ export default function TerminalPanel({ className }: { className?: string }) {
 
     try {
       const result = await executeTerminalCommand(raw);
-      pushLine({ kind: "output", text: result.output });
+      // Prompt acks carry no output of their own — the streamed tokens are the response.
+      if (result.output) pushLine({ kind: "output", text: result.output });
       if (result.sideEffect) applySideEffect(result.sideEffect);
     } catch {
       pushLine({ kind: "output", text: "error: command could not reach the backend" });
@@ -39,21 +40,26 @@ export default function TerminalPanel({ className }: { className?: string }) {
   return (
     <Panel title="terminal" className={className}>
       <div className="flex min-h-full flex-col">
-        {history.map((line) =>
-          line.kind === "command" ? (
-            <div key={line.id} className="whitespace-pre-wrap break-words">
-              <span className="text-accent">{PROMPT}</span>{" "}
-              <span className="text-fg">{line.text}</span>
-            </div>
-          ) : (
+        {history.map((line) => {
+          if (line.kind === "command") {
+            return (
+              <div key={line.id} className="whitespace-pre-wrap break-words">
+                <span className="text-accent">{PROMPT}</span>{" "}
+                <span className="text-fg">{line.text}</span>
+              </div>
+            );
+          }
+          // AI responses read as primary text; command output stays muted.
+          const tone = line.kind === "response" ? "text-fg" : "text-muted";
+          return (
             <div
               key={line.id}
-              className="whitespace-pre-wrap break-words text-muted"
+              className={`whitespace-pre-wrap break-words ${tone}`}
             >
               {line.text}
             </div>
-          ),
-        )}
+          );
+        })}
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
           <span className="shrink-0 text-accent">{PROMPT}</span>
           <input
