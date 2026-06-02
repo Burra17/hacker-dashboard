@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import DashboardConnection from "@/components/DashboardConnection";
+import QueryProvider from "@/components/QueryProvider";
 import ThemeSync from "@/components/ThemeSync";
 import "./globals.css";
 
@@ -28,7 +29,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-mono">
         <ThemeSync />
         <DashboardConnection />
-        {children}
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );
