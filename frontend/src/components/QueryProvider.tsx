@@ -17,7 +17,12 @@ export default function QueryProvider({ children }: { children: ReactNode }) {
         defaultOptions: {
           queries: {
             staleTime: POLL_INTERVAL_MS,
-            refetchOnWindowFocus: false,
+            // Recover promptly from a transient fetch error (e.g. the API wasn't ready on
+            // first load): refetch when the tab regains focus or the network reconnects, so a
+            // healthy backend clears the panel's dimmed/stale state without waiting for the
+            // next 5-minute poll.
+            refetchOnWindowFocus: true,
+            refetchOnReconnect: true,
           },
         },
       }),

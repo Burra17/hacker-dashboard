@@ -56,4 +56,32 @@ describe("WeatherPanel", () => {
 
     expect(screen.getByText("STALE")).toBeInTheDocument();
   });
+
+  it("does not dim while a background refetch is in flight", () => {
+    mockUseWeatherQuery.mockReturnValue(
+      queryResult({
+        data: reading,
+        isError: false,
+        isPending: false,
+        isFetching: true,
+        isRefetching: true,
+      }),
+    );
+
+    render(<WeatherPanel />);
+
+    expect(screen.queryByText("STALE")).not.toBeInTheDocument();
+    expect(screen.getByText("Hudiksvall")).toBeInTheDocument();
+  });
+
+  it("does not dim during the initial load", () => {
+    mockUseWeatherQuery.mockReturnValue(
+      queryResult({ data: undefined, isError: false, isPending: true, isLoading: true }),
+    );
+
+    render(<WeatherPanel />);
+
+    expect(screen.queryByText("STALE")).not.toBeInTheDocument();
+    expect(screen.getByText("// hämtar väder…")).toBeInTheDocument();
+  });
 });
