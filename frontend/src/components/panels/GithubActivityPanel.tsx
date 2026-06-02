@@ -12,12 +12,12 @@ function formatTime(iso: string): string {
   return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
-export default function CommitsPanel({ className }: { className?: string }) {
+export default function GithubActivityPanel({ className }: { className?: string }) {
   const { data, isError, isPending } = useGithubActivityQuery();
   const lines = (data ?? []).slice(0, MAX_VISIBLE_LINES);
 
   return (
-    <Panel title="commits" className={className} stale={isError}>
+    <Panel title="github activity" className={className} stale={isError}>
       {lines.length > 0 ? (
         <ul className="space-y-0.5">
           {lines.map((line) => (
@@ -30,11 +30,11 @@ export default function CommitsPanel({ className }: { className?: string }) {
           ))}
         </ul>
       ) : isPending ? (
-        <p className="text-muted">{"// hämtar commits…"}</p>
+        <p className="text-muted">{"// hämtar aktivitet…"}</p>
       ) : isError ? (
-        <p className="text-muted">{"// commits otillgängliga"}</p>
+        <p className="text-muted">{"// aktivitet otillgänglig"}</p>
       ) : (
-        <p className="text-muted">{"// inga commits än"}</p>
+        <p className="text-muted">{"// ingen aktivitet än"}</p>
       )}
     </Panel>
   );

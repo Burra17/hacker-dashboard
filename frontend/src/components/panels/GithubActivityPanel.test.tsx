@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import CommitsPanel from "@/components/panels/CommitsPanel";
+import GithubActivityPanel from "@/components/panels/GithubActivityPanel";
 import { useGithubActivityQuery, type ActivityLine } from "@/lib/api/github";
 
 vi.mock("@/lib/api/github", () => ({ useGithubActivityQuery: vi.fn() }));
@@ -22,13 +22,13 @@ function queryResult(partial: Partial<GithubQueryResult>): GithubQueryResult {
 
 beforeEach(() => mockUseGithubActivityQuery.mockReset());
 
-describe("CommitsPanel", () => {
+describe("GithubActivityPanel", () => {
   it("renders activity as log lines with repo and message", () => {
     mockUseGithubActivityQuery.mockReturnValue(
       queryResult({ data: activity, isError: false, isPending: false }),
     );
 
-    render(<CommitsPanel />);
+    render(<GithubActivityPanel />);
 
     expect(screen.getByText("[hacker-dashboard]")).toBeInTheDocument();
     expect(screen.getByText(/merged PR #59/)).toBeInTheDocument();
@@ -40,9 +40,9 @@ describe("CommitsPanel", () => {
       queryResult({ data: undefined, isError: true, isPending: false }),
     );
 
-    render(<CommitsPanel />);
+    render(<GithubActivityPanel />);
 
     expect(screen.getByText("STALE")).toBeInTheDocument();
-    expect(screen.getByText("// commits otillgängliga")).toBeInTheDocument();
+    expect(screen.getByText("// aktivitet otillgänglig")).toBeInTheDocument();
   });
 });

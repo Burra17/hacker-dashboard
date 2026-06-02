@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { POLL_INTERVAL_MS } from "@/lib/config";
 
 const GITHUB_USER = "Burra17";
 const EVENTS_URL = `https://api.github.com/users/${GITHUB_USER}/events/public`;
+
+// Poll once a minute so the feed feels live while staying within GitHub's
+// unauthenticated rate limit (60 requests/hour).
+const ACTIVITY_POLL_INTERVAL_MS = 60_000;
 
 /** One GitHub activity event, flattened into a renderable log line. */
 export interface ActivityLine {
@@ -88,6 +91,6 @@ export function useGithubActivityQuery() {
   return useQuery({
     queryKey: GITHUB_ACTIVITY_QUERY_KEY,
     queryFn: fetchGithubActivity,
-    refetchInterval: POLL_INTERVAL_MS,
+    refetchInterval: ACTIVITY_POLL_INTERVAL_MS,
   });
 }
