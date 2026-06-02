@@ -1,7 +1,16 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen } from "@testing-library/react";
 import DashboardGrid from "@/components/DashboardGrid";
 import { useDashboardStore } from "@/store/useDashboardStore";
+
+// The weather/sports panels poll over TanStack Query; stub the hooks so this test
+// stays focused on panel visibility and needs no QueryClientProvider.
+vi.mock("@/lib/api/weather", () => ({
+  useWeatherQuery: () => ({ data: undefined, isError: false, isPending: true }),
+}));
+vi.mock("@/lib/api/sports", () => ({
+  useSportsQuery: () => ({ data: undefined, isError: false, isPending: true }),
+}));
 
 beforeEach(() => {
   useDashboardStore.setState(useDashboardStore.getInitialState(), true);

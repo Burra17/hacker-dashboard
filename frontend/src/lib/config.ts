@@ -4,3 +4,6 @@ export const API_BASE_URL =
 
 /** SignalR hub endpoint — mirrors the backend route in Program.cs. */
 export const DASHBOARD_HUB_URL = `${API_BASE_URL}/hubs/dashboard`;
+
+/** Background polling interval for HTTP-fetched server data (weather, sports) — 5 minutes. */
+export const POLL_INTERVAL_MS = 5 * 60 * 1000;
