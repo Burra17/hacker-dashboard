@@ -9,11 +9,11 @@ public sealed class WeatherOptions
     public string BaseUrl { get; init; } = "https://api.open-meteo.com";
 
     /// <summary>Latitude of the location to report weather for.</summary>
-    public double Latitude { get; init; } = 59.33;
+    public double Latitude { get; init; } = 61.7283;
 
     /// <summary>Longitude of the location to report weather for.</summary>
-    public double Longitude { get; init; } = 18.06;
+    public double Longitude { get; init; } = 17.1036;
 
     /// <summary>Human-readable name echoed back in the reading.</summary>
-    public string LocationName { get; init; } = "Stockholm";
+    public string LocationName { get; init; } = "Hudiksvall";
 }
