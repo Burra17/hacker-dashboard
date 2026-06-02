@@ -2,6 +2,7 @@ using HackerDashboard.Application.Interfaces.Services;
 using HackerDashboard.Infrastructure.Prompts;
 using HackerDashboard.Infrastructure.Settings;
 using HackerDashboard.Infrastructure.Streaming;
+using HackerDashboard.Infrastructure.Weather;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -14,11 +15,22 @@ public static class DependencyInjection
     {
         services.Configure<StreamingOptions>(configuration.GetSection(StreamingOptions.SectionName));
         services.Configure<PromptVaultOptions>(configuration.GetSection(PromptVaultOptions.SectionName));
+        services.Configure<WeatherOptions>(configuration.GetSection(WeatherOptions.SectionName));
 
         // Thin typed client over the external PromptVault API (base URL from config).
         services.AddHttpClient<IPromptResponder, PromptVaultResponder>((sp, client) =>
         {
             PromptVaultOptions options = sp.GetRequiredService<IOptions<PromptVaultOptions>>().Value;
+            client.BaseAddress = new Uri(options.BaseUrl);
+        });
+
+        // Last known weather reading, shared between fetches so the source going down degrades to stale.
+        services.AddSingleton<WeatherCache>();
+
+        // Thin typed client over the keyless Open-Meteo API (base URL from config).
+        services.AddHttpClient<IWeatherProvider, OpenMeteoWeatherClient>((sp, client) =>
+        {
+            WeatherOptions options = sp.GetRequiredService<IOptions<WeatherOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
         });
 
