@@ -4,7 +4,7 @@ Context for Claude (and other AI assistants) working in the Hacker Dashboard mon
 
 ## Project Overview
 
-Hacker Dashboard is a live dashboard with a "Tiling Window Manager" aesthetic: a grid of terminal-style panels showing real-time data (system logs, weather, sports), a scrolling live ticker, and an interactive terminal that acts as a command center. The terminal can control the UI (themes, panel toggles), fetch data on demand, and stream AI prompt responses token-by-token.
+Hacker Dashboard is a live dashboard with a "Tiling Window Manager" aesthetic: a grid of terminal-style panels showing live data (GitHub activity, weather, sports), a scrolling live ticker, and an interactive terminal that acts as a command center. The terminal can control the UI (themes, panel toggles), fetch data on demand, and stream AI prompt responses token-by-token.
 
 A **.NET 10 Web API** (Clean Architecture + CQRS) streams real-time data via **SignalR** to a **Next.js / TypeScript** frontend.
 
