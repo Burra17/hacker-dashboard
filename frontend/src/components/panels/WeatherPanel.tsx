@@ -11,20 +11,20 @@ export default function WeatherPanel({ className }: { className?: string }) {
   return (
     <Panel title="weather" className={className} stale={stale}>
       {data ? (
-        <dl className="space-y-1">
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted">plats</dt>
-            <dd className="text-fg">{data.location}</dd>
-          </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted">temp</dt>
-            <dd className="text-accent">{data.temperatureCelsius.toFixed(1)}°C</dd>
-          </div>
-          <div className="flex justify-between gap-3">
-            <dt className="text-muted">förhållande</dt>
-            <dd className="text-fg">{data.condition}</dd>
-          </div>
-        </dl>
+        <ul className="space-y-0.5">
+          <li>
+            <span className="text-muted">plats: </span>
+            <span className="text-accent">{data.location}</span>
+          </li>
+          <li>
+            <span className="text-muted">temp: </span>
+            <span className="text-accent">{data.temperatureCelsius.toFixed(1)}°C</span>
+          </li>
+          <li>
+            <span className="text-muted">förhållande: </span>
+            <span className="text-accent">{data.condition}</span>
+          </li>
+        </ul>
       ) : isPending ? (
         <p className="text-muted">{"// hämtar väder…"}</p>
       ) : (
