@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\HackerDashboard.Application\HackerDashboard.Application.csproj" />
+    <ProjectReference Include="..\src\HackerDashboard.Infrastructure\HackerDashboard.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

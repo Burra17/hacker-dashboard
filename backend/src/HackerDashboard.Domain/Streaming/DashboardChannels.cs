@@ -11,4 +11,7 @@ public static class DashboardChannels
 
     /// <summary>Periodic liveness ping driving the client's live/offline indicator.</summary>
     public const string Heartbeat = "heartbeat";
+
+    /// <summary>Token-by-token AI prompt responses (the one channel that breaks request/response).</summary>
+    public const string TerminalResponse = "terminal.response";
 }
