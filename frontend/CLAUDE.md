@@ -40,7 +40,7 @@ Keep the TanStack/Zustand boundary documented in the store so it doesn't erode o
 ## Panels & Layout
 - A fixed CSS Grid of terminal-style panels, flush against each other (Tiling WM feel).
 - A reusable `<Panel>` component (title bar, border, content area) is the base for every panel.
-- V1 panels: system logs, weather, sports, live ticker (top), terminal.
+- V1 panels: GitHub activity (commits/dev-log, left), weather, sports, live ticker (top), terminal. *(The mock system-logs SignalR stream still feeds the ticker until Issue 4.10 repoints it to live sport.)*
 - The live ticker uses Framer Motion for a smooth, infinite stock-ticker scroll fed by Zustand stream data.
 
 ## Terminal

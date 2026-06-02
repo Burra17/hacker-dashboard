@@ -119,7 +119,28 @@ Dra in sportdata via query-handler i backend, exponerad för frontend-polling.
 Installera TanStack Query. Hämta väder/sport med polling var 5:e minut (bakgrundsuppdatering), **inte** via SignalR. Respektera state-gränsen mot Zustand.
  
 ### Issue 4.9 (valbar) — Utvecklings-loggar / commits-panel
-Dra in commits/dev-loggar (t.ex. GitHub API) som en extra panel via TanStack Query.
+Dra in commits/dev-loggar (t.ex. GitHub API) som en extra panel via TanStack Query. *(Byggd som en `GITHUB ACTIVITY`-panel matad av GitHubs publika events-API, som ersätter den gamla mock-loggpanelen i vänsterkolumnen.)*
+ 
+### Issue 4.10 — Koppla live-sport till tickern
+Bygg om TICKER-komponenten så att den konsumerar `latestResult` från den befintliga `useSportsQuery`, så att Hammarbys och Chelseas resultat rullar i toppen i stället för den gamla mock-strömmen. Respektera state-gränsen: sportdatan ligger kvar i TanStack Query, kopieras inte in i Zustand.
+ 
+### Issue 4.11 — Integrera skarpt sport-API (backend)
+Ersätt den hårdkodade mock-datan i `ApiFootballSportsClient` med riktiga anrop mot ett skarpt sport-API (t.ex. API-Football via RapidAPI), mappat till `SportsDto`. Behåll cache- och stale-logiken. **API-nyckeln hanteras lokalt via .NET user-secrets — får aldrig hårdkodas eller committas/pushas.**
+ 
+---
+ 
+## Fas 5 — Interaktiv Terminal
+ 
+Målet: gör terminalen till en riktig kommandocentral som hanterar tangentbordsinput, redigering och ett växande kommando-API — bortom dagens parse-/echo-stub.
+ 
+### Issue 5.1 — Hantera riktig terminal-input
+Robust input-hantering: radredigering, Enter för att köra, och kommandohistorik (upp-/ned-pil) från `terminal`-slicen. Fokus- och scroll-beteende som känns som en riktig terminal.
+ 
+### Issue 5.2 — Inbyggda terminal-kommandon (`help`, `clear`)
+Lägg till lokala meta-kommandon som resolveras klient-sidan (likt `theme`/`toggle`, utan backend-anrop): `help` listar tillgängliga verb med kort hjälptext, `clear` tömmer terminalhistoriken i `terminal`-slicen.
+ 
+### Issue 5.3 — Actions & enhetlig kommando-feedback
+Enhetlig återkoppling för kommandon (lyckat/fel, färg per `CommandResult.kind`) och en tydlig struktur för att lägga till fler actions/verb allt eftersom de behövs.
  
 ---
  
