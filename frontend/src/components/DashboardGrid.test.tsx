@@ -11,6 +11,9 @@ vi.mock("@/lib/api/weather", () => ({
 vi.mock("@/lib/api/sports", () => ({
   useSportsQuery: () => ({ data: undefined, isError: false, isPending: true }),
 }));
+vi.mock("@/lib/api/github", () => ({
+  useGithubActivityQuery: () => ({ data: undefined, isError: false, isPending: true }),
+}));
 
 beforeEach(() => {
   useDashboardStore.setState(useDashboardStore.getInitialState(), true);

@@ -6,7 +6,7 @@ export type ThemeName = (typeof THEME_NAMES)[number];
 
 export const PANEL_IDS = [
   "ticker",
-  "system.logs",
+  "commits",
   "weather",
   "sports",
   "terminal",
