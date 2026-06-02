@@ -1,6 +1,7 @@
 using HackerDashboard.Application.Interfaces.Services;
 using HackerDashboard.Infrastructure.Prompts;
 using HackerDashboard.Infrastructure.Settings;
+using HackerDashboard.Infrastructure.Sports;
 using HackerDashboard.Infrastructure.Streaming;
 using HackerDashboard.Infrastructure.Weather;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +17,7 @@ public static class DependencyInjection
         services.Configure<StreamingOptions>(configuration.GetSection(StreamingOptions.SectionName));
         services.Configure<PromptVaultOptions>(configuration.GetSection(PromptVaultOptions.SectionName));
         services.Configure<WeatherOptions>(configuration.GetSection(WeatherOptions.SectionName));
+        services.Configure<SportsOptions>(configuration.GetSection(SportsOptions.SectionName));
 
         // Thin typed client over the external PromptVault API (base URL from config).
         services.AddHttpClient<IPromptResponder, PromptVaultResponder>((sp, client) =>
@@ -33,6 +35,11 @@ public static class DependencyInjection
             WeatherOptions options = sp.GetRequiredService<IOptions<WeatherOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
         });
+
+        // Last known sports reading, shared so a re-fetch is skipped within the TTL and the source
+        // going down degrades to stale. The fetch is mocked for now (see ApiFootballSportsClient).
+        services.AddSingleton<SportsCache>();
+        services.AddSingleton<ISportsProvider, ApiFootballSportsClient>();
 
         // One store instance backs both the producer (writes) and the snapshot seam (reads).
         services.AddSingleton<SystemLogStore>();
