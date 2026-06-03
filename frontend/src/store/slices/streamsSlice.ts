@@ -2,6 +2,10 @@ import type { StateCreator } from "zustand";
 import type { DashboardEvent } from "@contracts/DashboardEvent";
 import type { DashboardStore } from "@/store/useDashboardStore";
 
+// Cap retained events per channel so a long-lived rolling feed (e.g. system.logs)
+// stays bounded in memory instead of growing for the lifetime of the tab.
+const MAX_EVENTS_PER_CHANNEL = 200;
+
 export interface StreamsSlice {
   /** SignalR data keyed by channel (e.g. "system.logs"). */
   streams: Record<string, DashboardEvent[]>;
@@ -22,7 +26,9 @@ export const createStreamsSlice: StateCreator<
     set((state) => ({
       streams: {
         ...state.streams,
-        [event.channel]: [...(state.streams[event.channel] ?? []), event],
+        [event.channel]: [...(state.streams[event.channel] ?? []), event].slice(
+          -MAX_EVENTS_PER_CHANNEL,
+        ),
       },
     })),
   resetChannel: (channel, events) =>

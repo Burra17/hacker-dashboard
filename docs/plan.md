@@ -132,17 +132,32 @@ Gör sport-tickern mer dynamisk: i stället för ett enda `latestResult` per lag
  
 ---
  
-## Fas 5 — Interaktiv Terminal
- 
+## Fas 5 — Layout-omorganisation & återupplivad logg-pipeline
+
+Målet: ge dashboarden sin slutliga layout — minimalt väder i headern, GitHub-aktivitet till höger, och en rullande systemloggpanel i den stora vänsterkolumnen som återanvänder den befintliga `system.logs`-pipelinen från Fas 1/3.
+
+### Issue 5.1 — Minimal väderstatus i headern
+Ta bort den stora väderpanelen och rendera vädret som en kompakt status-sträng (`[ Hudiksvall: 20.7°C | Overcast ]`) högerställd i headern, bredvid tickern. Behåll TanStack Query-pollingen och stale-degraderingen (dämpas vid stale/offline).
+
+### Issue 5.2 — Rullande systemloggpanel (återuppliva `system.logs`)
+Skapa en `SystemLogsPanel` som konsumerar den befintliga `system.logs`-SignalR-pipelinen (snapshot/delta via `streams`-slicen) och rullar loggar kontinuerligt med nivåfärgad text. Kapa ström-bufferten så den inte växer obegränsat över tid.
+
+### Issue 5.3 — Omorganisera griden
+Flytta GitHub-aktivitetspanelen till höger kolumn (där vädret låg) och placera `SystemLogsPanel` i den stora vänsterkolumnen (där GitHub låg). Lägg till `logs` som panel-id så `toggle`-kommandot fungerar för den nya panelen.
+
+---
+
+## Fas 6 — Interaktiv Terminal
+
 Målet: gör terminalen till en riktig kommandocentral som hanterar tangentbordsinput, redigering och ett växande kommando-API — bortom dagens parse-/echo-stub.
- 
-### Issue 5.1 — Hantera riktig terminal-input
+
+### Issue 6.1 — Hantera riktig terminal-input
 Robust input-hantering: radredigering, Enter för att köra, och kommandohistorik (upp-/ned-pil) från `terminal`-slicen. Fokus- och scroll-beteende som känns som en riktig terminal.
- 
-### Issue 5.2 — Inbyggda terminal-kommandon (`help`, `clear`)
+
+### Issue 6.2 — Inbyggda terminal-kommandon (`help`, `clear`)
 Lägg till lokala meta-kommandon som resolveras klient-sidan (likt `theme`/`toggle`, utan backend-anrop): `help` listar tillgängliga verb med kort hjälptext, `clear` tömmer terminalhistoriken i `terminal`-slicen.
- 
-### Issue 5.3 — Actions & enhetlig kommando-feedback
+
+### Issue 6.3 — Actions & enhetlig kommando-feedback
 Enhetlig återkoppling för kommandon (lyckat/fel, färg per `CommandResult.kind`) och en tydlig struktur för att lägga till fler actions/verb allt eftersom de behövs.
  
 ---

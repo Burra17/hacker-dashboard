@@ -3,7 +3,7 @@
 import { useState, type PointerEvent } from "react";
 import TickerPanel from "@/components/panels/TickerPanel";
 import GithubActivityPanel from "@/components/panels/GithubActivityPanel";
-import WeatherPanel from "@/components/panels/WeatherPanel";
+import SystemLogsPanel from "@/components/panels/SystemLogsPanel";
 import SportsPanel from "@/components/panels/SportsPanel";
 import TerminalPanel from "@/components/panels/TerminalPanel";
 import { useDashboardStore } from "@/store/useDashboardStore";
@@ -40,10 +40,12 @@ export default function DashboardGrid() {
       className="grid h-screen grid-cols-2 bg-bg"
       style={{ gridTemplateRows: `auto 1fr 1fr ${terminalHeight}px` }}
     >
-      {panels.ticker && <TickerPanel className="col-span-2" />}
-      {panels.commits && <GithubActivityPanel className="row-span-2" />}
+      {panels.ticker && (
+        <TickerPanel className="col-span-2" showWeather={panels.weather} />
+      )}
+      {panels.logs && <SystemLogsPanel className="row-span-2" />}
       <div className="row-span-2 flex h-full min-h-0 flex-col">
-        {panels.weather && <WeatherPanel className="min-h-0 flex-1" />}
+        {panels.commits && <GithubActivityPanel className="min-h-0 flex-1" />}
         {panels.sports && <SportsPanel className="min-h-0 flex-1" />}
       </div>
       {panels.terminal && (
