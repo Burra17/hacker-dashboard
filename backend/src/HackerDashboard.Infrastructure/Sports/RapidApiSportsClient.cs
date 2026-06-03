@@ -34,6 +34,7 @@ public sealed class RapidApiSportsClient(
     private const string MatchesSearchPath = "football-matches-search";
     private const string SuccessStatus = "success";
     private const string MatchType = "match";
+    private const int MaxRecentResults = 5;
     private const string UnavailableText = "Sport otillgängligt";
     private const string NoResultText = "Inga tidigare matcher";
     private const string Unknown = "—";
@@ -80,7 +81,7 @@ public sealed class RapidApiSportsClient(
             Stale: true);
     }
 
-    private static TeamSportsDto Unavailable(string team) => new(team, UnavailableText, NoNextMatch);
+    private static TeamSportsDto Unavailable(string team) => new(team, [UnavailableText], NoNextMatch);
 
     private async Task<SportsDto> FetchFromSourceAsync(CancellationToken cancellationToken)
     {
@@ -120,30 +121,30 @@ public sealed class RapidApiSportsClient(
             [.. matches.Where(m => m.Type == MatchType && m.Involves(id))];
 
         // The free-tier "finished"/"started" flags are unreliable (played games come back as
-        // not-finished), so classify by kickoff time instead: the most recent played match with a
-        // score is the latest result; the earliest future match is the next fixture.
-        MatchSuggestion? last = teamMatches
-            .Where(m => m.Kickoff <= now && m.HasScore)
-            .OrderByDescending(m => m.Kickoff)
-            .FirstOrDefault();
+        // not-finished), so classify by kickoff time instead: the most recent played matches with a
+        // score are the results (newest first); the earliest future match is the next fixture.
+        List<MatchSuggestion> played =
+            [.. teamMatches.Where(m => m.Kickoff <= now && m.HasScore).OrderByDescending(m => m.Kickoff)];
 
         MatchSuggestion? next = teamMatches
             .Where(m => m.Kickoff > now)
             .OrderBy(m => m.Kickoff)
             .FirstOrDefault();
 
+        IReadOnlyList<string> recentResults = played.Count > 0
+            ? [.. played.Take(MaxRecentResults).Select(FormatResult)]
+            : [NoResultText];
+
         return new TeamSportsDto(
-            Team: ResolveTeamName(last ?? next, id, fallbackName),
-            LatestResult: FormatResult(last),
+            Team: ResolveTeamName(played.FirstOrDefault() ?? next, id, fallbackName),
+            RecentResults: recentResults,
             NextMatch: FormatNextMatch(next, id));
     }
 
-    private static string FormatResult(MatchSuggestion? match) =>
-        match is null
-            ? NoResultText
-            : string.Create(
-                CultureInfo.InvariantCulture,
-                $"{Name(match.HomeTeamName)} {match.HomeTeamScore ?? 0} - {match.AwayTeamScore ?? 0} {Name(match.AwayTeamName)}");
+    private static string FormatResult(MatchSuggestion match) =>
+        string.Create(
+            CultureInfo.InvariantCulture,
+            $"{Name(match.HomeTeamName)} {match.HomeTeamScore ?? 0} - {match.AwayTeamScore ?? 0} {Name(match.AwayTeamName)}");
 
     private NextMatchDto FormatNextMatch(MatchSuggestion? match, string teamId)
     {

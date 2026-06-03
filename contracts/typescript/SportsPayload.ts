@@ -14,12 +14,12 @@ export interface SportsPayload {
   stale: boolean;
 }
 
-/** Per-team summary: the most recent result and the upcoming fixture. */
+/** Per-team summary: the most recent results and the upcoming fixture. */
 export interface TeamSportsSummary {
   /** Team name. */
   team: string;
-  /** Most recent result, e.g. "Hammarby 2 - 0 AIK" (used in the ticker). */
-  latestResult: string;
+  /** The five most recent results (newest first), e.g. "Hammarby 2 - 0 AIK" (looped in the ticker). */
+  recentResults: string[];
   /** The upcoming fixture (shown in the sports panel). */
   nextMatch: NextMatch;
 }
