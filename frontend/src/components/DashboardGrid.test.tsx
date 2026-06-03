@@ -22,10 +22,10 @@ beforeEach(() => {
 describe("DashboardGrid panel visibility", () => {
   it("hides a panel when its ui.panels flag is toggled off", () => {
     render(<DashboardGrid />);
-    expect(screen.getByText("weather")).toBeInTheDocument();
+    expect(screen.getByText("system logs")).toBeInTheDocument();
 
-    act(() => useDashboardStore.getState().togglePanel("weather"));
+    act(() => useDashboardStore.getState().togglePanel("logs"));
 
-    expect(screen.queryByText("weather")).not.toBeInTheDocument();
+    expect(screen.queryByText("system logs")).not.toBeInTheDocument();
   });
 });

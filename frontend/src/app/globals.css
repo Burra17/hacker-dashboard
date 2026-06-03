@@ -12,6 +12,8 @@
   --muted: #4f7a5f;
   --accent: #39ff14;
   --accent-2: #00e5ff;
+  --warning: #e3b341;
+  --error: #ff5c57;
 }
 
 [data-theme="synthwave"] {
@@ -22,6 +24,8 @@
   --muted: #7a6f8f;
   --accent: #ff2d95;
   --accent-2: #00f0ff;
+  --warning: #ffb86c;
+  --error: #ff5577;
 }
 
 @theme inline {
@@ -32,6 +36,8 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-2: var(--accent-2);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
   --font-mono: var(--font-jetbrains-mono);
 }
 

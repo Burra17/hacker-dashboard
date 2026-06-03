@@ -9,6 +9,7 @@ export const PANEL_IDS = [
   "commits",
   "weather",
   "sports",
+  "logs",
   "terminal",
 ] as const;
 export type PanelId = (typeof PANEL_IDS)[number];
