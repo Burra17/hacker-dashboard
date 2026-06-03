@@ -40,14 +40,14 @@ public static class DependencyInjection
         // going down degrades to stale.
         services.AddSingleton<SportsCache>();
 
-        // Typed client over API-Football (RapidAPI). Base URL + the RapidAPI auth headers come from
-        // SportsOptions; the key is a user-secret, never committed.
-        services.AddHttpClient<ISportsProvider, ApiFootballSportsClient>((sp, client) =>
+        // Typed client over the "Free API Live Football Data" RapidAPI. Base URL + the RapidAPI auth
+        // headers come from SportsOptions; the key is a user-secret, never committed.
+        services.AddHttpClient<ISportsProvider, RapidApiSportsClient>((sp, client) =>
         {
             SportsOptions options = sp.GetRequiredService<IOptions<SportsOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
-            client.DefaultRequestHeaders.Add(ApiFootballSportsClient.RapidApiKeyHeader, options.ApiKey);
-            client.DefaultRequestHeaders.Add(ApiFootballSportsClient.RapidApiHostHeader, options.ApiHost);
+            client.DefaultRequestHeaders.Add(RapidApiSportsClient.RapidApiKeyHeader, options.ApiKey);
+            client.DefaultRequestHeaders.Add(RapidApiSportsClient.RapidApiHostHeader, options.ApiHost);
         });
 
         // One store instance backs both the producer (writes) and the snapshot seam (reads).
