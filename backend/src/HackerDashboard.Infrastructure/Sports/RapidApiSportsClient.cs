@@ -1,11 +1,11 @@
 using System.Globalization;
+using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using ErrorOr;
 using HackerDashboard.Application.Features.Sports.Common.Dtos;
 using HackerDashboard.Application.Interfaces.Services;
 using HackerDashboard.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
-using System.Net.Http.Json;
-using System.Text.Json.Serialization;
 
 namespace HackerDashboard.Infrastructure.Sports;
 
