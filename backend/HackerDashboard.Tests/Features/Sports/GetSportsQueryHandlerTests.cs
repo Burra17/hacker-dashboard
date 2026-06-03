@@ -22,8 +22,8 @@ public sealed class GetSportsQueryHandlerTests
 
     private static SportsDto SampleReading() =>
         new(
-            new TeamSportsDto("Hammarby", "Hammarby 2 - 0 AIK", new NextMatchDto("2026-06-08", "15:00", "Djurgården")),
-            new TeamSportsDto("Chelsea", "Chelsea 3 - 1 Arsenal", new NextMatchDto("2026-06-07", "17:30", "Liverpool")),
+            new TeamSportsDto("Hammarby", ["Hammarby 2 - 0 AIK"], new NextMatchDto("2026-06-08", "15:00", "Djurgården")),
+            new TeamSportsDto("Chelsea", ["Chelsea 3 - 1 Arsenal"], new NextMatchDto("2026-06-07", "17:30", "Liverpool")),
             DateTimeOffset.UtcNow,
             Stale: false);
 

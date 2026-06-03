@@ -15,7 +15,7 @@ export default function SportsPanel({ className }: { className?: string }) {
           {[data.hammarby, data.chelsea].map((team) => (
             <li key={team.team}>
               <p className="font-bold text-accent">{team.team}</p>
-              <p className="text-fg">{team.latestResult}</p>
+              <p className="text-fg">{team.recentResults[0]}</p>
               <p className="text-muted">
                 nästa: {team.nextMatch.opponent} · {team.nextMatch.date}{" "}
                 {team.nextMatch.time}

@@ -10,12 +10,12 @@ const mockUseSportsQuery = vi.mocked(useSportsQuery);
 const reading: SportsPayload = {
   hammarby: {
     team: "Hammarby",
-    latestResult: "Hammarby 2 - 0 AIK",
+    recentResults: ["Hammarby 2 - 0 AIK", "Hammarby 1 - 1 IFK"],
     nextMatch: { date: "2026-06-08", time: "15:00", opponent: "Djurgården" },
   },
   chelsea: {
     team: "Chelsea",
-    latestResult: "Chelsea 3 - 1 Arsenal",
+    recentResults: ["Chelsea 3 - 1 Arsenal"],
     nextMatch: { date: "2026-06-07", time: "17:30", opponent: "Liverpool" },
   },
   observedAt: "2026-06-02T10:00:00Z",
@@ -30,7 +30,7 @@ function queryResult(partial: Partial<SportsQueryResult>): SportsQueryResult {
 beforeEach(() => mockUseSportsQuery.mockReset());
 
 describe("Ticker", () => {
-  it("scrolls both teams' latest results from the sports query", () => {
+  it("loops through both teams' recent results from the sports query", () => {
     mockUseSportsQuery.mockReturnValue(
       queryResult({ data: reading, isError: false, isPending: false }),
     );
@@ -39,6 +39,7 @@ describe("Ticker", () => {
 
     // Two marquee copies (one aria-hidden) → each result appears twice.
     expect(screen.getAllByText("Hammarby 2 - 0 AIK")).toHaveLength(2);
+    expect(screen.getAllByText("Hammarby 1 - 1 IFK")).toHaveLength(2);
     expect(screen.getAllByText("Chelsea 3 - 1 Arsenal")).toHaveLength(2);
   });
 

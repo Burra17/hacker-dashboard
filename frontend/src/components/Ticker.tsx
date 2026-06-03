@@ -18,7 +18,12 @@ export default function Ticker() {
     );
   }
 
-  const items = [data.hammarby.latestResult, data.chelsea.latestResult];
+  // Loop through both teams' recent results so the ticker feels like a live feed.
+  const items = [...data.hammarby.recentResults, ...data.chelsea.recentResults];
+
+  if (items.length === 0) {
+    return <span className="text-muted">{"// sport otillgängligt"}</span>;
+  }
 
   return (
     <div

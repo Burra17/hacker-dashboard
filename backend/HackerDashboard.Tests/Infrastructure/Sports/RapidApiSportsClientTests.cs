@@ -108,7 +108,7 @@ public sealed class RapidApiSportsClientTests
     }
 
     [Test]
-    public async Task GetCurrentAsync_EmptyCache_MapsLatestResultAndNextMatchForBothTeams()
+    public async Task GetCurrentAsync_EmptyCache_MapsRecentResultsAndNextMatchForBothTeams()
     {
         var handler = new StubHandler(RouteReading);
         var cache = new SportsCache();
@@ -118,9 +118,9 @@ public sealed class RapidApiSportsClientTests
 
         Assert.That(result.IsError, Is.False);
         Assert.That(result.Value.Hammarby.Team, Is.EqualTo("Hammarby"));
-        Assert.That(result.Value.Hammarby.LatestResult, Is.EqualTo("Hammarby 3 - 0 AIK"));
+        Assert.That(result.Value.Hammarby.RecentResults, Is.EqualTo(new[] { "Hammarby 3 - 0 AIK" }));
         Assert.That(result.Value.Hammarby.NextMatch.Opponent, Is.EqualTo("Djurgården"));
-        Assert.That(result.Value.Chelsea.LatestResult, Is.EqualTo("Sunderland 2 - 1 Chelsea"));
+        Assert.That(result.Value.Chelsea.RecentResults, Is.EqualTo(new[] { "Sunderland 2 - 1 Chelsea" }));
         Assert.That(result.Value.Chelsea.NextMatch.Opponent, Is.EqualTo("Western Sydney Wanderers FC"));
         Assert.That(result.Value.Stale, Is.False);
         Assert.That(handler.CallCount, Is.EqualTo(2)); // one search per team
@@ -141,7 +141,7 @@ public sealed class RapidApiSportsClientTests
     }
 
     [Test]
-    public async Task GetCurrentAsync_PicksMostRecentPlayedMatchAsResult()
+    public async Task GetCurrentAsync_OrdersRecentResultsNewestFirst()
     {
         var handler = new StubHandler(_ => Json(SearchJson(
             Match(ChelseaId, "Chelsea", 100, "Arsenal", "2026-04-01T15:00:00Z", 1, 0),
@@ -150,16 +150,39 @@ public sealed class RapidApiSportsClientTests
 
         ErrorOr<SportsDto> result = await client.GetCurrentAsync(CancellationToken.None);
 
-        // The 2026-05-10 fixture is the more recent of the two past results.
-        Assert.That(result.Value.Chelsea.LatestResult, Is.EqualTo("Liverpool 0 - 2 Chelsea"));
+        // Newest (2026-05-10) first, then 2026-04-01.
+        Assert.That(result.Value.Chelsea.RecentResults, Is.EqualTo(new[]
+        {
+            "Liverpool 0 - 2 Chelsea",
+            "Chelsea 1 - 0 Arsenal",
+        }));
+    }
+
+    [Test]
+    public async Task GetCurrentAsync_CapsRecentResultsAtFiveNewestFirst()
+    {
+        var handler = new StubHandler(_ => Json(SearchJson(
+            Match(ChelseaId, "Chelsea", 1, "Opp1", "2026-05-01T15:00:00Z", 1, 0),
+            Match(ChelseaId, "Chelsea", 2, "Opp2", "2026-05-02T15:00:00Z", 2, 0),
+            Match(ChelseaId, "Chelsea", 3, "Opp3", "2026-05-03T15:00:00Z", 3, 0),
+            Match(ChelseaId, "Chelsea", 4, "Opp4", "2026-05-04T15:00:00Z", 4, 0),
+            Match(ChelseaId, "Chelsea", 5, "Opp5", "2026-05-05T15:00:00Z", 5, 0),
+            Match(ChelseaId, "Chelsea", 6, "Opp6", "2026-05-06T15:00:00Z", 6, 0))));
+        RapidApiSportsClient client = CreateClient(handler, new SportsCache());
+
+        ErrorOr<SportsDto> result = await client.GetCurrentAsync(CancellationToken.None);
+
+        Assert.That(result.Value.Chelsea.RecentResults, Has.Count.EqualTo(5));
+        Assert.That(result.Value.Chelsea.RecentResults[0], Is.EqualTo("Chelsea 6 - 0 Opp6"));
+        Assert.That(result.Value.Chelsea.RecentResults[4], Is.EqualTo("Chelsea 2 - 0 Opp2"));
     }
 
     [Test]
     public async Task GetCurrentAsync_PastUnfinishedFixtures_AreNotShownAsNextMatch()
     {
         // Reproduces the bug: matches whose dates are in the past must never surface as "next",
-        // even though the free-tier feed may not flag them finished. A played past match is the
-        // result; with no future fixture, next degrades to a placeholder.
+        // even though the free-tier feed may not flag them finished. Only played (scored) past
+        // matches become results; with no future fixture, next degrades to a placeholder.
         var handler = new StubHandler(_ => Json(SearchJson(
             Match(ChelseaId, "Chelsea", 100, "Arsenal", "2026-01-10T15:00:00Z"),
             Match(200, "Liverpool", ChelseaId, "Chelsea", "2026-05-10T15:00:00Z", 0, 2))));
@@ -167,7 +190,7 @@ public sealed class RapidApiSportsClientTests
 
         ErrorOr<SportsDto> result = await client.GetCurrentAsync(CancellationToken.None);
 
-        Assert.That(result.Value.Chelsea.LatestResult, Is.EqualTo("Liverpool 0 - 2 Chelsea"));
+        Assert.That(result.Value.Chelsea.RecentResults, Is.EqualTo(new[] { "Liverpool 0 - 2 Chelsea" }));
         Assert.That(result.Value.Chelsea.NextMatch.Opponent, Is.EqualTo("—"));
     }
 
@@ -188,8 +211,8 @@ public sealed class RapidApiSportsClientTests
     {
         var cache = new SportsCache();
         SportsDto cached = new(
-            new TeamSportsDto("Hammarby", "CACHED RESULT", new NextMatchDto("2026-07-01", "19:00", "Malmö FF")),
-            new TeamSportsDto("Chelsea", "CACHED RESULT", new NextMatchDto("2026-07-02", "20:45", "Tottenham")),
+            new TeamSportsDto("Hammarby", ["CACHED RESULT"], new NextMatchDto("2026-07-01", "19:00", "Malmö FF")),
+            new TeamSportsDto("Chelsea", ["CACHED RESULT"], new NextMatchDto("2026-07-02", "20:45", "Tottenham")),
             DateTimeOffset.UtcNow,
             Stale: false);
         cache.Store(cached);
@@ -208,8 +231,8 @@ public sealed class RapidApiSportsClientTests
     {
         var cache = new SportsCache();
         cache.Store(new SportsDto(
-            new TeamSportsDto("Hammarby", "Hammarby 1 - 1 IFK", new NextMatchDto("2026-07-01", "19:00", "Malmö FF")),
-            new TeamSportsDto("Chelsea", "Chelsea 0 - 2 City", new NextMatchDto("2026-07-02", "20:45", "Tottenham")),
+            new TeamSportsDto("Hammarby", ["Hammarby 1 - 1 IFK"], new NextMatchDto("2026-07-01", "19:00", "Malmö FF")),
+            new TeamSportsDto("Chelsea", ["Chelsea 0 - 2 City"], new NextMatchDto("2026-07-02", "20:45", "Tottenham")),
             DateTimeOffset.UtcNow,
             Stale: false));
         var handler = new StubHandler(_ => throw new HttpRequestException("source down"));
@@ -219,7 +242,7 @@ public sealed class RapidApiSportsClientTests
 
         Assert.That(result.IsError, Is.False);
         Assert.That(result.Value.Stale, Is.True);
-        Assert.That(result.Value.Hammarby.LatestResult, Is.EqualTo("Hammarby 1 - 1 IFK"));
+        Assert.That(result.Value.Hammarby.RecentResults, Is.EqualTo(new[] { "Hammarby 1 - 1 IFK" }));
     }
 
     [Test]
@@ -234,8 +257,8 @@ public sealed class RapidApiSportsClientTests
         Assert.That(result.IsError, Is.False);
         Assert.That(result.Value.Stale, Is.True);
         Assert.That(result.Value.Hammarby.Team, Is.EqualTo("Hammarby"));
-        Assert.That(result.Value.Hammarby.LatestResult, Is.EqualTo("Sport otillgängligt"));
-        Assert.That(result.Value.Chelsea.LatestResult, Is.EqualTo("Sport otillgängligt"));
+        Assert.That(result.Value.Hammarby.RecentResults, Is.EqualTo(new[] { "Sport otillgängligt" }));
+        Assert.That(result.Value.Chelsea.RecentResults, Is.EqualTo(new[] { "Sport otillgängligt" }));
     }
 
     [Test]
@@ -248,7 +271,7 @@ public sealed class RapidApiSportsClientTests
 
         Assert.That(result.IsError, Is.False);
         Assert.That(result.Value.Stale, Is.True);
-        Assert.That(result.Value.Hammarby.LatestResult, Is.EqualTo("Sport otillgängligt"));
+        Assert.That(result.Value.Hammarby.RecentResults, Is.EqualTo(new[] { "Sport otillgängligt" }));
     }
 
     [Test]
@@ -261,7 +284,7 @@ public sealed class RapidApiSportsClientTests
 
         Assert.That(result.IsError, Is.False);
         Assert.That(result.Value.Stale, Is.True);
-        Assert.That(result.Value.Hammarby.LatestResult, Is.EqualTo("Sport otillgängligt"));
+        Assert.That(result.Value.Hammarby.RecentResults, Is.EqualTo(new[] { "Sport otillgängligt" }));
     }
 
     [Test]
@@ -275,7 +298,7 @@ public sealed class RapidApiSportsClientTests
         Assert.That(result.IsError, Is.False);
         Assert.That(result.Value.Stale, Is.False); // the API answered fine — there were just no matches
         Assert.That(result.Value.Hammarby.Team, Is.EqualTo("Hammarby"));
-        Assert.That(result.Value.Hammarby.LatestResult, Is.EqualTo("Inga tidigare matcher"));
+        Assert.That(result.Value.Hammarby.RecentResults, Is.EqualTo(new[] { "Inga tidigare matcher" }));
         Assert.That(result.Value.Hammarby.NextMatch.Opponent, Is.EqualTo("—"));
     }
 }

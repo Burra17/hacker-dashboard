@@ -10,12 +10,12 @@ const mockUseSportsQuery = vi.mocked(useSportsQuery);
 const reading: SportsPayload = {
   hammarby: {
     team: "Hammarby",
-    latestResult: "Hammarby 2 - 0 AIK",
+    recentResults: ["Hammarby 2 - 0 AIK", "Hammarby 1 - 1 IFK"],
     nextMatch: { date: "2026-06-08", time: "15:00", opponent: "Djurgården" },
   },
   chelsea: {
     team: "Chelsea",
-    latestResult: "Chelsea 3 - 1 Arsenal",
+    recentResults: ["Chelsea 3 - 1 Arsenal", "Chelsea 0 - 2 City"],
     nextMatch: { date: "2026-06-07", time: "17:30", opponent: "Liverpool" },
   },
   observedAt: "2026-06-02T10:00:00Z",
@@ -30,7 +30,7 @@ function queryResult(partial: Partial<SportsQueryResult>): SportsQueryResult {
 beforeEach(() => mockUseSportsQuery.mockReset());
 
 describe("SportsPanel", () => {
-  it("renders both teams' latest results and next fixtures", () => {
+  it("renders both teams' most recent result and next fixtures", () => {
     mockUseSportsQuery.mockReturnValue(
       queryResult({ data: reading, isError: false, isPending: false }),
     );
@@ -38,6 +38,7 @@ describe("SportsPanel", () => {
     render(<SportsPanel />);
 
     expect(screen.getByText("Hammarby")).toBeInTheDocument();
+    // The panel shows only the most recent result (recentResults[0]).
     expect(screen.getByText("Hammarby 2 - 0 AIK")).toBeInTheDocument();
     expect(screen.getByText("Chelsea 3 - 1 Arsenal")).toBeInTheDocument();
     expect(screen.getByText(/Djurgården/)).toBeInTheDocument();
