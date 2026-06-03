@@ -44,7 +44,8 @@ Keep the TanStack/Zustand boundary documented in the store so it doesn't erode o
 - The live ticker uses Framer Motion for a smooth, infinite stock-ticker scroll fed by Zustand stream data.
 
 ## Terminal
-- Parses raw input into `{ verb, args }` (matching the `TerminalCommand` contract), then `executeTerminalCommand` **routes** it: pure-UI verbs (`theme`, `toggle`) are resolved entirely client-side by `runLocalUiCommand` (validate against `THEME_NAMES`/`PANEL_IDS`, mutate the `ui` slice, return output or a friendly error) — **no backend round-trip**; every other verb is POSTed via Axios to the command endpoint.
+- Parses raw input into `{ verb, args }` (matching the `TerminalCommand` contract), then `executeTerminalCommand` **routes** it: local verbs are resolved entirely client-side by `runLocalCommand` — **no backend round-trip**; every other verb is POSTed via Axios to the command endpoint. Local verbs are UI (`theme`, `toggle` — validate against `THEME_NAMES`/`PANEL_IDS`, mutate the `ui` slice) and terminal meta (`help` lists commands, `clear` empties the `terminal` slice history), each returning a `CommandResult` (or a friendly error).
+- Known verbs live in one registry (`lib/terminal/commands.ts`) that feeds both the `help` listing and Tab-completion (`completeCommand` auto-fills a uniquely matching verb) — add new verbs there so the two never drift.
 - Renders `CommandResult.output` in history (local commands return the same `CommandResult` shape as backend ones).
 - Backend-returned `sideEffect`s are applied to the `ui` slice via `applySideEffect` — the backend names intent, the frontend owns what it looks like. `theme` reflects onto `<html data-theme>` via `ThemeSync`; `toggle` shows/hides panels in `DashboardGrid`.
 - AI/`prompt` commands stream their answer back over the SignalR `terminal.response` channel token-by-token — render tokens as they arrive, don't wait for a full blob.

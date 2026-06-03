@@ -90,4 +90,35 @@ describe("TerminalPanel", () => {
     await userEvent.type(field, "{Control>}l{/Control}");
     expect(screen.queryByText("theme synthwave")).not.toBeInTheDocument();
   });
+
+  it("lists commands locally with help", async () => {
+    render(<TerminalPanel />);
+    await userEvent.type(
+      screen.getByLabelText("terminal input"),
+      "help{enter}",
+    );
+
+    expect(await screen.findByText(/available commands:/)).toBeInTheDocument();
+    expect(sendCommand).not.toHaveBeenCalled();
+  });
+
+  it("empties the history with the clear command", async () => {
+    render(<TerminalPanel />);
+    const field = screen.getByLabelText("terminal input");
+
+    await userEvent.type(field, "help{enter}");
+    expect(await screen.findByText(/available commands:/)).toBeInTheDocument();
+
+    await userEvent.type(field, "clear{enter}");
+    expect(screen.queryByText(/available commands:/)).not.toBeInTheDocument();
+    expect(screen.queryByText("help")).not.toBeInTheDocument();
+  });
+
+  it("auto-completes a unique command on Tab", async () => {
+    render(<TerminalPanel />);
+    const field = screen.getByLabelText<HTMLInputElement>("terminal input");
+
+    await userEvent.type(field, "cl{Tab}");
+    expect(field).toHaveValue("clear");
+  });
 });
