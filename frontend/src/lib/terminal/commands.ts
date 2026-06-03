@@ -103,12 +103,15 @@ export const COMMAND_VERBS: readonly string[] = COMMANDS.filter(
   (c) => !c.hidden,
 ).map((c) => c.verb);
 
+/** First line of the `help` output; the terminal keys verb-highlighting off it. */
+export const HELP_HEADER = "available commands:";
+
 /** Renders the `help` output: aligned columns of every visible verb and its summary. */
 export function formatHelp(): string {
   const visible = COMMANDS.filter((c) => !c.hidden);
   const width = Math.max(...visible.map((c) => c.verb.length));
   const lines = visible.map((c) => `  ${c.verb.padEnd(width)}  ${c.summary}`);
-  return ["available commands:", ...lines].join("\n");
+  return [HELP_HEADER, ...lines].join("\n");
 }
 
 /**

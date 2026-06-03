@@ -116,6 +116,20 @@ describe("TerminalPanel", () => {
     expect(sendCommand).not.toHaveBeenCalled();
   });
 
+  it("accents the verbs in the help listing", async () => {
+    render(<TerminalPanel />);
+    await userEvent.type(
+      screen.getByLabelText("terminal input"),
+      "help{enter}",
+    );
+
+    // The verb token is accented; its summary stays in the muted system tone.
+    expect(await screen.findByText("clear")).toHaveClass("text-accent");
+    expect(screen.getByText("Clear the terminal screen.")).toHaveClass(
+      "text-muted",
+    );
+  });
+
   it("empties the history with the clear command", async () => {
     render(<TerminalPanel />);
     const field = screen.getByLabelText("terminal input");

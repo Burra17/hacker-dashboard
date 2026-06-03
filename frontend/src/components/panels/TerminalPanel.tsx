@@ -5,10 +5,12 @@ import Panel from "@/components/Panel";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { executeTerminalCommand } from "@/lib/terminal/executeTerminalCommand";
 import { applySideEffect } from "@/lib/terminal/applySideEffect";
-import { completeCommand } from "@/lib/terminal/commands";
+import { completeCommand, HELP_HEADER } from "@/lib/terminal/commands";
 import { lineToneClass } from "@/lib/terminal/lineTone";
 
 const PROMPT = "guest@hacker-dashboard:~$";
+// A help row is `  <verb>  <summary>`; capture the verb (with its indent) to accent it.
+const HELP_ROW = /^(\s*\S+)(.*)$/;
 
 export default function TerminalPanel({ className }: { className?: string }) {
   const input = useDashboardStore((s) => s.input);
@@ -127,10 +129,36 @@ export default function TerminalPanel({ className }: { className?: string }) {
             );
           }
           // Color command output by its CommandResult.kind (red on failure).
+          const tone = lineToneClass(line);
+
+          // The `help` listing gets its verbs accented for readability.
+          if (line.outputKind === "system" && line.text.startsWith(HELP_HEADER)) {
+            return (
+              <div key={line.id}>
+                {line.text.split("\n").map((row, i) => {
+                  const match = row === HELP_HEADER ? null : row.match(HELP_ROW);
+                  if (!match) {
+                    return (
+                      <div key={i} className={`whitespace-pre-wrap break-words ${tone}`}>
+                        {row}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={i} className="whitespace-pre-wrap break-words">
+                      <span className="text-accent">{match[1]}</span>
+                      <span className={tone}>{match[2]}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          }
+
           return (
             <div
               key={line.id}
-              className={`whitespace-pre-wrap break-words ${lineToneClass(line)}`}
+              className={`whitespace-pre-wrap break-words ${tone}`}
             >
               {line.text}
             </div>
