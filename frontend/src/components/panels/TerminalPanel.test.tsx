@@ -60,4 +60,34 @@ describe("TerminalPanel", () => {
       await screen.findByText(/could not reach the backend/),
     ).toBeInTheDocument();
   });
+
+  it("focuses the input on mount", () => {
+    render(<TerminalPanel />);
+    expect(screen.getByLabelText("terminal input")).toHaveFocus();
+  });
+
+  it("recalls the previous command with ArrowUp and clears it with ArrowDown", async () => {
+    render(<TerminalPanel />);
+    const field = screen.getByLabelText<HTMLInputElement>("terminal input");
+
+    await userEvent.type(field, "theme synthwave{enter}");
+    expect(field).toHaveValue("");
+
+    await userEvent.type(field, "{arrowup}");
+    expect(field).toHaveValue("theme synthwave");
+
+    await userEvent.type(field, "{arrowdown}");
+    expect(field).toHaveValue("");
+  });
+
+  it("clears the screen with Ctrl+L", async () => {
+    render(<TerminalPanel />);
+    const field = screen.getByLabelText("terminal input");
+
+    await userEvent.type(field, "theme synthwave{enter}");
+    expect(await screen.findByText("theme synthwave")).toBeInTheDocument();
+
+    await userEvent.type(field, "{Control>}l{/Control}");
+    expect(screen.queryByText("theme synthwave")).not.toBeInTheDocument();
+  });
 });

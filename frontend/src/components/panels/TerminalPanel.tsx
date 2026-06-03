@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type FormEvent } from "react";
+import { useEffect, useRef, type FormEvent, type KeyboardEvent } from "react";
 import Panel from "@/components/Panel";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { executeTerminalCommand } from "@/lib/terminal/executeTerminalCommand";
@@ -13,11 +13,22 @@ export default function TerminalPanel({ className }: { className?: string }) {
   const setInput = useDashboardStore((s) => s.setInput);
   const history = useDashboardStore((s) => s.history);
   const pushLine = useDashboardStore((s) => s.pushLine);
+  const pushCommand = useDashboardStore((s) => s.pushCommand);
+  const recallPrevious = useDashboardStore((s) => s.recallPrevious);
+  const recallNext = useDashboardStore((s) => s.recallNext);
+  const clearHistory = useDashboardStore((s) => s.clearHistory);
 
+  const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "end" });
   }, [history]);
+
+  // Land the cursor in the prompt on mount, like opening a fresh terminal.
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -25,6 +36,7 @@ export default function TerminalPanel({ className }: { className?: string }) {
     if (raw.trim() === "") return;
 
     pushLine({ kind: "command", text: raw });
+    pushCommand(raw);
     setInput("");
 
     try {
@@ -34,12 +46,56 @@ export default function TerminalPanel({ className }: { className?: string }) {
       if (result.sideEffect) applySideEffect(result.sideEffect);
     } catch {
       pushLine({ kind: "output", text: "error: command could not reach the backend" });
+    } finally {
+      inputRef.current?.focus();
+    }
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      recallPrevious();
+      return;
+    }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      recallNext();
+      return;
+    }
+    // Emacs-style line shortcuts that browsers don't give a text input for free.
+    if (event.ctrlKey) {
+      const field = event.currentTarget;
+      switch (event.key) {
+        case "a":
+          event.preventDefault();
+          field.setSelectionRange(0, 0);
+          return;
+        case "e":
+          event.preventDefault();
+          field.setSelectionRange(field.value.length, field.value.length);
+          return;
+        case "u":
+          event.preventDefault();
+          setInput("");
+          return;
+        case "l":
+          event.preventDefault();
+          clearHistory();
+          return;
+      }
+    }
+  };
+
+  // Clicking the panel focuses the prompt, but don't steal an in-progress text selection.
+  const handleClick = () => {
+    if (window.getSelection()?.toString() === "") {
+      inputRef.current?.focus();
     }
   };
 
   return (
     <Panel title="terminal" className={className}>
-      <div className="flex min-h-full flex-col">
+      <div className="flex min-h-full flex-col" onClick={handleClick}>
         {history.map((line) => {
           if (line.kind === "command") {
             return (
@@ -63,9 +119,11 @@ export default function TerminalPanel({ className }: { className?: string }) {
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
           <span className="shrink-0 text-accent">{PROMPT}</span>
           <input
+            ref={inputRef}
             type="text"
             value={input}
             onChange={(event) => setInput(event.target.value)}
+            onKeyDown={handleKeyDown}
             autoComplete="off"
             spellCheck={false}
             aria-label="terminal input"
