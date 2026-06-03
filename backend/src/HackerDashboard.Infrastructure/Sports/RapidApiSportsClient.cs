@@ -11,8 +11,9 @@ namespace HackerDashboard.Infrastructure.Sports;
 
 /// <summary>
 /// Client for the followed teams' results and fixtures over the "Free API Live Football Data"
-/// RapidAPI. Per team it searches matches by name and derives the latest finished result and the
-/// next upcoming fixture. Reads are served from a time-boxed cache to stay under the rate limit.
+/// RapidAPI. Per team it searches matches by name and, classifying by kickoff time, derives the
+/// most recent played result and the next upcoming fixture. Reads are served from a time-boxed
+/// cache to stay under the rate limit.
 /// </summary>
 /// <remarks>
 /// Degrades gracefully: the upstream failing for <em>any</em> reason (403/429, network, malformed
@@ -23,7 +24,8 @@ namespace HackerDashboard.Infrastructure.Sports;
 public sealed class RapidApiSportsClient(
     HttpClient httpClient,
     SportsCache cache,
-    IOptions<SportsOptions> options) : ISportsProvider
+    IOptions<SportsOptions> options,
+    TimeProvider timeProvider) : ISportsProvider
 {
     /// <summary>RapidAPI request headers (set on the typed client in DI).</summary>
     public const string RapidApiKeyHeader = "x-rapidapi-key";
@@ -39,6 +41,7 @@ public sealed class RapidApiSportsClient(
     private static readonly NextMatchDto NoNextMatch = new(Date: Unknown, Time: Unknown, Opponent: Unknown);
 
     private readonly SportsOptions _options = options.Value;
+    private readonly TimeProvider _timeProvider = timeProvider;
     private readonly TimeZoneInfo _timeZone = ResolveTimeZone(options.Value.Timezone);
 
     public async Task<ErrorOr<SportsDto>> GetCurrentAsync(CancellationToken cancellationToken = default)
@@ -81,12 +84,13 @@ public sealed class RapidApiSportsClient(
 
     private async Task<SportsDto> FetchFromSourceAsync(CancellationToken cancellationToken)
     {
+        DateTimeOffset now = _timeProvider.GetUtcNow();
         IReadOnlyList<MatchSuggestion> hammarby = await SearchAsync(_options.HammarbyTeamName, cancellationToken);
         IReadOnlyList<MatchSuggestion> chelsea = await SearchAsync(_options.ChelseaTeamName, cancellationToken);
 
         return new SportsDto(
-            Hammarby: BuildTeam(_options.HammarbyTeamId, _options.HammarbyTeamName, hammarby),
-            Chelsea: BuildTeam(_options.ChelseaTeamId, _options.ChelseaTeamName, chelsea),
+            Hammarby: BuildTeam(_options.HammarbyTeamId, _options.HammarbyTeamName, hammarby, now),
+            Chelsea: BuildTeam(_options.ChelseaTeamId, _options.ChelseaTeamName, chelsea, now),
             ObservedAt: DateTimeOffset.UtcNow,
             Stale: false);
     }
@@ -109,19 +113,22 @@ public sealed class RapidApiSportsClient(
         return body.Response.Suggestions ?? [];
     }
 
-    private TeamSportsDto BuildTeam(int teamId, string fallbackName, IReadOnlyList<MatchSuggestion> matches)
+    private TeamSportsDto BuildTeam(int teamId, string fallbackName, IReadOnlyList<MatchSuggestion> matches, DateTimeOffset now)
     {
         string id = teamId.ToString(CultureInfo.InvariantCulture);
         List<MatchSuggestion> teamMatches =
             [.. matches.Where(m => m.Type == MatchType && m.Involves(id))];
 
+        // The free-tier "finished"/"started" flags are unreliable (played games come back as
+        // not-finished), so classify by kickoff time instead: the most recent played match with a
+        // score is the latest result; the earliest future match is the next fixture.
         MatchSuggestion? last = teamMatches
-            .Where(m => m.Finished)
+            .Where(m => m.Kickoff <= now && m.HasScore)
             .OrderByDescending(m => m.Kickoff)
             .FirstOrDefault();
 
         MatchSuggestion? next = teamMatches
-            .Where(m => m is { Finished: false, Started: false })
+            .Where(m => m.Kickoff > now)
             .OrderBy(m => m.Kickoff)
             .FirstOrDefault();
 
@@ -188,8 +195,6 @@ public sealed class RapidApiSportsClient(
         [property: JsonPropertyName("type")] string? Type,
         [property: JsonPropertyName("utcTime")] DateTimeOffset? UtcTime,
         [property: JsonPropertyName("matchDate")] DateTimeOffset? MatchDate,
-        [property: JsonPropertyName("finished")] bool Finished,
-        [property: JsonPropertyName("started")] bool Started,
         [property: JsonPropertyName("homeTeamId")] string? HomeTeamId,
         [property: JsonPropertyName("homeTeamName")] string? HomeTeamName,
         [property: JsonPropertyName("homeTeamScore")] int? HomeTeamScore,
@@ -198,6 +203,8 @@ public sealed class RapidApiSportsClient(
         [property: JsonPropertyName("awayTeamScore")] int? AwayTeamScore)
     {
         public DateTimeOffset Kickoff => UtcTime ?? MatchDate ?? DateTimeOffset.MinValue;
+
+        public bool HasScore => HomeTeamScore.HasValue && AwayTeamScore.HasValue;
 
         public bool Involves(string teamId) => HomeTeamId == teamId || AwayTeamId == teamId;
 

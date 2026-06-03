@@ -6,6 +6,7 @@ using HackerDashboard.Infrastructure.Streaming;
 using HackerDashboard.Infrastructure.Weather;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace HackerDashboard.Infrastructure;
@@ -39,6 +40,7 @@ public static class DependencyInjection
         // Last known sports reading, shared so a re-fetch is skipped within the TTL and the source
         // going down degrades to stale.
         services.AddSingleton<SportsCache>();
+        services.TryAddSingleton(TimeProvider.System);
 
         // Typed client over the "Free API Live Football Data" RapidAPI. Base URL + the RapidAPI auth
         // headers come from SportsOptions; the key is a user-secret, never committed.
