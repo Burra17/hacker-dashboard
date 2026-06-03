@@ -33,3 +33,74 @@ describe("terminal response streaming", () => {
     expect(history[1].streaming).toBe(true);
   });
 });
+
+describe("command history recall", () => {
+  it("does nothing when there is no command history", () => {
+    useDashboardStore.getState().recallPrevious();
+    useDashboardStore.getState().recallNext();
+
+    const { input, historyCursor } = useDashboardStore.getState();
+    expect(input).toBe("");
+    expect(historyCursor).toBeNull();
+  });
+
+  it("pushCommand skips blanks and consecutive duplicates", () => {
+    const { pushCommand } = useDashboardStore.getState();
+
+    pushCommand("ls");
+    pushCommand("   "); // blank
+    pushCommand("ls"); // consecutive duplicate
+    pushCommand("theme synthwave");
+
+    expect(useDashboardStore.getState().commandHistory).toEqual([
+      "ls",
+      "theme synthwave",
+    ]);
+  });
+
+  it("recallPrevious walks newest to oldest and clamps at the first entry", () => {
+    const { pushCommand, recallPrevious } = useDashboardStore.getState();
+    pushCommand("one");
+    pushCommand("two");
+
+    recallPrevious();
+    expect(useDashboardStore.getState().input).toBe("two");
+
+    recallPrevious();
+    expect(useDashboardStore.getState().input).toBe("one");
+
+    recallPrevious(); // clamps — stays at the oldest
+    expect(useDashboardStore.getState().input).toBe("one");
+    expect(useDashboardStore.getState().historyCursor).toBe(0);
+  });
+
+  it("recallNext walks back toward newest and returns to a blank line", () => {
+    const { pushCommand, recallPrevious, recallNext } =
+      useDashboardStore.getState();
+    pushCommand("one");
+    pushCommand("two");
+
+    recallPrevious();
+    recallPrevious();
+    expect(useDashboardStore.getState().input).toBe("one");
+
+    recallNext();
+    expect(useDashboardStore.getState().input).toBe("two");
+
+    recallNext(); // past the newest → fresh prompt
+    expect(useDashboardStore.getState().input).toBe("");
+    expect(useDashboardStore.getState().historyCursor).toBeNull();
+  });
+
+  it("setInput resets the recall cursor", () => {
+    const { pushCommand, recallPrevious, setInput } =
+      useDashboardStore.getState();
+    pushCommand("one");
+
+    recallPrevious();
+    expect(useDashboardStore.getState().historyCursor).toBe(0);
+
+    setInput("typing");
+    expect(useDashboardStore.getState().historyCursor).toBeNull();
+  });
+});
