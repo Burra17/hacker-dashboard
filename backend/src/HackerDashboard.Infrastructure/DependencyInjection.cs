@@ -6,6 +6,7 @@ using HackerDashboard.Infrastructure.Streaming;
 using HackerDashboard.Infrastructure.Weather;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace HackerDashboard.Infrastructure;
@@ -37,9 +38,19 @@ public static class DependencyInjection
         });
 
         // Last known sports reading, shared so a re-fetch is skipped within the TTL and the source
-        // going down degrades to stale. The fetch is mocked for now (see ApiFootballSportsClient).
+        // going down degrades to stale.
         services.AddSingleton<SportsCache>();
-        services.AddSingleton<ISportsProvider, ApiFootballSportsClient>();
+        services.TryAddSingleton(TimeProvider.System);
+
+        // Typed client over the "Free API Live Football Data" RapidAPI. Base URL + the RapidAPI auth
+        // headers come from SportsOptions; the key is a user-secret, never committed.
+        services.AddHttpClient<ISportsProvider, RapidApiSportsClient>((sp, client) =>
+        {
+            SportsOptions options = sp.GetRequiredService<IOptions<SportsOptions>>().Value;
+            client.BaseAddress = new Uri(options.BaseUrl);
+            client.DefaultRequestHeaders.Add(RapidApiSportsClient.RapidApiKeyHeader, options.ApiKey);
+            client.DefaultRequestHeaders.Add(RapidApiSportsClient.RapidApiHostHeader, options.ApiHost);
+        });
 
         // One store instance backs both the producer (writes) and the snapshot seam (reads).
         services.AddSingleton<SystemLogStore>();
