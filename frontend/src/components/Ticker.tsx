@@ -1,39 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useDashboardStore } from "@/store/useDashboardStore";
-import { DASHBOARD_CHANNELS } from "@/lib/signalr/channels";
-import { selectSystemLogLines } from "@/components/panels/selectSystemLogLines";
+import { useSportsQuery } from "@/lib/api/sports";
 
 const SCROLL_DURATION_S = 30;
-const MAX_ITEMS = 20;
-// Refresh the marquee content on a slow cadence so the scroll stays smooth
-// instead of restarting every time a delta arrives (~1-2s).
-const REFRESH_MS = 5_000;
-
-function buildItems(): string[] {
-  const events =
-    useDashboardStore.getState().streams[DASHBOARD_CHANNELS.systemLogs];
-  return selectSystemLogLines(events)
-    .slice(-MAX_ITEMS)
-    .map((line) => `${line.source}: ${line.message}`);
-}
 
 export default function Ticker() {
-  const [items, setItems] = useState<string[]>(buildItems);
+  const { data, isError, isPending } = useSportsQuery();
+  // Keep the last-known results but dim them when the upstream is stale/offline.
+  const stale = isError || (data?.stale ?? false);
 
-  useEffect(() => {
-    const id = setInterval(() => setItems(buildItems()), REFRESH_MS);
-    return () => clearInterval(id);
-  }, []);
-
-  if (items.length === 0) {
-    return <span className="text-muted">{"// inga strömdata än"}</span>;
+  if (!data) {
+    return (
+      <span className="text-muted">
+        {isPending ? "// hämtar sport…" : "// sport otillgängligt"}
+      </span>
+    );
   }
 
+  const items = [data.hammarby.latestResult, data.chelsea.latestResult];
+
   return (
-    <div className="relative min-w-0 flex-1 overflow-hidden">
+    <div
+      className={`relative min-w-0 flex-1 overflow-hidden transition-opacity ${stale ? "opacity-40" : ""}`}
+    >
       <motion.div
         className="flex w-max whitespace-nowrap"
         animate={{ x: ["0%", "-50%"] }}
