@@ -45,7 +45,7 @@ export default function DashboardGrid() {
       )}
       {panels.logs && <SystemLogsPanel className="row-span-2" />}
       <div className="row-span-2 flex h-full min-h-0 flex-col">
-        {panels.commits && <GithubActivityPanel className="min-h-0 flex-1" />}
+        {panels.github && <GithubActivityPanel className="min-h-0 flex-1" />}
         {panels.sports && <SportsPanel className="min-h-0 flex-1" />}
       </div>
       {panels.terminal && (
