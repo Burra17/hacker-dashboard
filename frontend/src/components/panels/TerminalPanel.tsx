@@ -5,6 +5,7 @@ import Panel from "@/components/Panel";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { executeTerminalCommand } from "@/lib/terminal/executeTerminalCommand";
 import { applySideEffect } from "@/lib/terminal/applySideEffect";
+import { completeCommand } from "@/lib/terminal/commands";
 
 const PROMPT = "guest@hacker-dashboard:~$";
 
@@ -60,6 +61,13 @@ export default function TerminalPanel({ className }: { className?: string }) {
     if (event.key === "ArrowDown") {
       event.preventDefault();
       recallNext();
+      return;
+    }
+    if (event.key === "Tab") {
+      // Keep focus in the prompt and auto-fill a uniquely matching command.
+      event.preventDefault();
+      const completed = completeCommand(input);
+      if (completed) setInput(completed);
       return;
     }
     // Emacs-style line shortcuts that browsers don't give a text input for free.
