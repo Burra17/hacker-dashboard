@@ -43,7 +43,8 @@ describe("TerminalPanel", () => {
       "fetch weather{enter}",
     );
 
-    expect(await screen.findByText("fetched")).toBeInTheDocument();
+    // `data` results read in the secondary accent color.
+    expect(await screen.findByText("fetched")).toHaveClass("text-accent-2");
     expect(useDashboardStore.getState().panels.weather).toBe(false);
   });
 
@@ -58,7 +59,20 @@ describe("TerminalPanel", () => {
 
     expect(
       await screen.findByText(/could not reach the backend/),
-    ).toBeInTheDocument();
+    ).toHaveClass("text-error");
+  });
+
+  it("runs a hidden easter egg locally", async () => {
+    render(<TerminalPanel />);
+    await userEvent.type(
+      screen.getByLabelText("terminal input"),
+      "sudo make me a sandwich{enter}",
+    );
+
+    expect(await screen.findByText(/incident has been reported/)).toHaveClass(
+      "text-error",
+    );
+    expect(sendCommand).not.toHaveBeenCalled();
   });
 
   it("focuses the input on mount", () => {

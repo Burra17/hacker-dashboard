@@ -6,6 +6,7 @@ import { useDashboardStore } from "@/store/useDashboardStore";
 import { executeTerminalCommand } from "@/lib/terminal/executeTerminalCommand";
 import { applySideEffect } from "@/lib/terminal/applySideEffect";
 import { completeCommand } from "@/lib/terminal/commands";
+import { lineToneClass } from "@/lib/terminal/lineTone";
 
 const PROMPT = "guest@hacker-dashboard:~$";
 
@@ -43,10 +44,22 @@ export default function TerminalPanel({ className }: { className?: string }) {
     try {
       const result = await executeTerminalCommand(raw);
       // Prompt acks carry no output of their own — the streamed tokens are the response.
-      if (result.output) pushLine({ kind: "output", text: result.output });
+      if (result.output) {
+        pushLine({
+          kind: "output",
+          text: result.output,
+          outputKind: result.kind,
+          success: result.success,
+        });
+      }
       if (result.sideEffect) applySideEffect(result.sideEffect);
     } catch {
-      pushLine({ kind: "output", text: "error: command could not reach the backend" });
+      pushLine({
+        kind: "output",
+        text: "error: command could not reach the backend",
+        outputKind: "system",
+        success: false,
+      });
     } finally {
       inputRef.current?.focus();
     }
@@ -113,12 +126,11 @@ export default function TerminalPanel({ className }: { className?: string }) {
               </div>
             );
           }
-          // AI responses read as primary text; command output stays muted.
-          const tone = line.kind === "response" ? "text-fg" : "text-muted";
+          // Color command output by its CommandResult.kind (red on failure).
           return (
             <div
               key={line.id}
-              className={`whitespace-pre-wrap break-words ${tone}`}
+              className={`whitespace-pre-wrap break-words ${lineToneClass(line)}`}
             >
               {line.text}
             </div>
