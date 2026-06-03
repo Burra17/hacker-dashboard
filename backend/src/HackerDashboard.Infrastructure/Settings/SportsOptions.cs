@@ -20,6 +20,9 @@ public sealed class SportsOptions
     /// <summary>How long a fetched reading stays fresh before re-fetching, to respect rate limits.</summary>
     public int CacheHours { get; init; } = 3;
 
+    /// <summary>IANA timezone for fixture kickoff times, so the API returns display-ready local "HH:mm".</summary>
+    public string Timezone { get; init; } = "Europe/Stockholm";
+
     /// <summary>API-Football team id for Hammarby (placeholder — verify when wiring the real API).</summary>
     public int HammarbyTeamId { get; init; } = 375;
 
