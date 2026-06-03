@@ -127,6 +127,9 @@ Bygg om TICKER-komponenten så att den konsumerar `latestResult` från den befin
 ### Issue 4.11 — Integrera skarpt sport-API (backend)
 Ersätt den hårdkodade mock-datan i `ApiFootballSportsClient` med riktiga anrop mot ett skarpt sport-API (t.ex. API-Football via RapidAPI), mappat till `SportsDto`. Behåll cache- och stale-logiken. **API-nyckeln hanteras lokalt via .NET user-secrets — får aldrig hårdkodas eller committas/pushas.**
  
+### Issue 4.12 — Rullande resultat-ticker (senaste 5 matcherna per lag)
+Gör sport-tickern mer dynamisk: i stället för ett enda `latestResult` per lag ska den loopa kontinuerligt genom de fem senaste matcherna för Hammarby och Chelsea, så det känns som en riktig nyhetsticker. Byt `latestResult: string` mot `recentResults: string[]` i kontraktet (TS + C#), låt `RapidApiSportsClient` ta `.Take(5)` av de senaste spelade matcherna (nyast först) och mappa dem till arrayen, och uppdatera TICKER-komponenten att platta ut bägge lagens arrayer till en sömlös, oändlig loop utan tomma luckor. Behåll graceful degradation (platshållare + `stale`) och uppdatera sport-panelen att visa senaste resultatet (`recentResults[0]`).
+ 
 ---
  
 ## Fas 5 — Interaktiv Terminal
