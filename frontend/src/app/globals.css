@@ -54,3 +54,22 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Boot sequence (Issue 7.1) — rotating HUD rings + a sweeping scanline. */
+@keyframes hud-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes boot-scan {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100vh);
+  }
+}
