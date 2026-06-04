@@ -43,7 +43,8 @@ describe("TerminalPanel", () => {
       "fetch weather{enter}",
     );
 
-    expect(await screen.findByText("fetched")).toBeInTheDocument();
+    // `data` results read in the secondary accent color.
+    expect(await screen.findByText("fetched")).toHaveClass("text-accent-2");
     expect(useDashboardStore.getState().panels.weather).toBe(false);
   });
 
@@ -58,7 +59,20 @@ describe("TerminalPanel", () => {
 
     expect(
       await screen.findByText(/could not reach the backend/),
-    ).toBeInTheDocument();
+    ).toHaveClass("text-error");
+  });
+
+  it("runs a hidden easter egg locally", async () => {
+    render(<TerminalPanel />);
+    await userEvent.type(
+      screen.getByLabelText("terminal input"),
+      "sudo make me a sandwich{enter}",
+    );
+
+    expect(await screen.findByText(/incident has been reported/)).toHaveClass(
+      "text-error",
+    );
+    expect(sendCommand).not.toHaveBeenCalled();
   });
 
   it("focuses the input on mount", () => {
@@ -100,6 +114,20 @@ describe("TerminalPanel", () => {
 
     expect(await screen.findByText(/available commands:/)).toBeInTheDocument();
     expect(sendCommand).not.toHaveBeenCalled();
+  });
+
+  it("accents the verbs in the help listing", async () => {
+    render(<TerminalPanel />);
+    await userEvent.type(
+      screen.getByLabelText("terminal input"),
+      "help{enter}",
+    );
+
+    // The verb token is accented; its summary stays in the muted system tone.
+    expect(await screen.findByText("clear")).toHaveClass("text-accent");
+    expect(screen.getByText("Clear the terminal screen.")).toHaveClass(
+      "text-muted",
+    );
   });
 
   it("empties the history with the clear command", async () => {

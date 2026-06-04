@@ -14,12 +14,16 @@ beforeEach(() => {
 });
 
 describe("isLocalCommand", () => {
-  it("recognizes the local verbs and nothing else", () => {
+  it("recognizes verbs with a run handler, including hidden easter eggs", () => {
     expect(isLocalCommand("theme")).toBe(true);
     expect(isLocalCommand("toggle")).toBe(true);
     expect(isLocalCommand("help")).toBe(true);
     expect(isLocalCommand("clear")).toBe(true);
+    expect(isLocalCommand("whoami")).toBe(true);
+    expect(isLocalCommand("sudo")).toBe(true);
+    // backend verbs (no run handler) and unknowns are not local
     expect(isLocalCommand("prompt")).toBe(false);
+    expect(isLocalCommand("nope")).toBe(false);
   });
 });
 
@@ -87,5 +91,24 @@ describe("runLocalCommand", () => {
     expect(result.success).toBe(false);
     expect(result.output).toBe("Error: Cannot hide primary control terminal");
     expect(useDashboardStore.getState().panels.terminal).toBe(true);
+  });
+
+  it("runs the whoami easter egg as a successful system result", () => {
+    const result = runLocalCommand(cmd("whoami"));
+
+    expect(result.success).toBe(true);
+    expect(result.kind).toBe("system");
+    expect(result.output.length).toBeGreaterThan(0);
+  });
+
+  it("runs the sudo easter egg as a failed result", () => {
+    const result = runLocalCommand(cmd("sudo"));
+
+    expect(result.success).toBe(false);
+    expect(result.output).toContain("reported");
+  });
+
+  it("throws if asked to run a non-local verb", () => {
+    expect(() => runLocalCommand(cmd("prompt"))).toThrow();
   });
 });

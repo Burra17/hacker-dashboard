@@ -1,4 +1,5 @@
 import type { StateCreator } from "zustand";
+import type { CommandKind } from "@contracts/CommandResult";
 import type { DashboardStore } from "@/store/useDashboardStore";
 
 export type TerminalLineKind = "command" | "output" | "response";
@@ -14,6 +15,10 @@ export interface TerminalLine {
   text: string;
   /** For `response` lines: true while tokens are still arriving. */
   streaming?: boolean;
+  /** For `output` lines: the producing command's kind, used to color the feedback. */
+  outputKind?: CommandKind;
+  /** For `output` lines: false marks a failure, rendered in the error color. */
+  success?: boolean;
 }
 
 export interface TerminalSlice {

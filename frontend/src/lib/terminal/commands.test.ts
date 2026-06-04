@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   COMMAND_VERBS,
   completeCommand,
+  findCommand,
   formatHelp,
 } from "@/lib/terminal/commands";
 
@@ -38,5 +39,17 @@ describe("completeCommand", () => {
 
   it("returns null when the verb is already complete", () => {
     expect(completeCommand("clear")).toBeNull();
+  });
+});
+
+describe("hidden easter eggs", () => {
+  it("are runnable but not surfaced in help or completion", () => {
+    expect(findCommand("whoami")?.run).toBeTypeOf("function");
+    expect(findCommand("sudo")?.run).toBeTypeOf("function");
+
+    expect(COMMAND_VERBS).not.toContain("whoami");
+    expect(formatHelp()).not.toContain("whoami");
+    expect(completeCommand("who")).toBeNull();
+    expect(completeCommand("su")).toBeNull();
   });
 });
