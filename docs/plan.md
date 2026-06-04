@@ -162,6 +162,15 @@ Enhetlig återkoppling för kommandon (lyckat/fel, färg per `CommandResult.kind
  
 ---
  
+## Fas 7 — Boot-sekvens & polish
+
+Målet: ge dashboarden en filmisk "Jarvis/Iron Man"-uppstart som döljer UI:t tills den initiala datan faktiskt är redo, och sedan gör en snygg övergång in i den live-dashboarden.
+
+### Issue 7.1 — Jarvis/Iron Man boot-sekvens
+Bygg en `<BootSequence>`-overlay (klient-sidan, monterad i `page.tsx` ovanpå `DashboardGrid`) som täcker UI:t tills de initiala API-anropen (väder, sport, GitHub via TanStack Query) har *settlat* och SignalR är `online` — med ett säkerhets-tak (~8s) så en nere upstream-API inte kan hänga uppstarten (panelen degraderar till stale i stället). HUD-estetik: text som scramblar/dekrypteras (`&%$#` → `GRANTED`), ASCII-progressbar och en minimalistisk roterande HUD-spinner — färger via tema-CSS-variablerna, aldrig hårdkodat. Håll animationen i minst ~2.5s även om datan är klar snabbare. Avsluta med "ALL SYSTEMS ONLINE" följt av en mjuk CSS/Framer Motion-övergång (fade/skala) som avslöjar dashboarden. Respektera `prefers-reduced-motion`. Boot-status hålls i lokal komponent-state (ingen ny Zustand-slice).
+ 
+---
+ 
 ## Var du börjar idag
  
 1. **Issue 0.1** — initiera monorepot. I terminalen:
